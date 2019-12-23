@@ -6,59 +6,11 @@ from keras.callbacks import Callback
 from sklearn.metrics import cohen_kappa_score
 from keras.layers import GlobalAveragePooling2D, Dropout, Dense
 from keras_applications.resnext import ResNeXt50, preprocess_input
+from keras_applications.efficientnet import EfficientNetB4
 
 from keras import backend as K
 
-
-def recall_m(y_true, y_pred):
-    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-    possible_positives = K.sum(K.round(K.clip(y_true, 0, 1)))
-    recall = true_positives / (possible_positives + K.epsilon())
-    return recall
-
-
-def precision_m(y_true, y_pred):
-    true_positives = K.sum(K.round(K.clip(y_true * y_pred, 0, 1)))
-    predicted_positives = K.sum(K.round(K.clip(y_pred, 0, 1)))
-    precision = true_positives / (predicted_positives + K.epsilon())
-    return precision
-
-
-def f1_m(y_true, y_pred):
-    precision = precision_m(y_true, y_pred)
-    recall = recall_m(y_true, y_pred)
-    return 2 * ((precision * recall) / (precision + recall + K.epsilon()))
-
-
-class Metrics(Callback):
-    def on_train_begin(self, logs={}):
-        self.val_kappas = []
-
-    def on_epoch_end(self, epoch, logs={}):
-        X_val, y_val = self.validation_data[:2]
-        y_val = y_val.sum(axis=1) - 1
-
-        y_pred = self.model.predict(X_val) > 0.5
-        y_pred = y_pred.astype(int).sum(axis=1) - 1
-
-        _val_kappa = cohen_kappa_score(
-            y_val,
-            y_pred,
-            weights='quadratic'
-        )
-
-        self.val_kappas.append(_val_kappa)
-
-        print(f"val_kappa: {_val_kappa:.4f}")
-
-        if _val_kappa == max(self.val_kappas):
-            print("Validation Kappa has improved. Saving model.")
-            self.model.save('model.h5')
-
-        return
-
-
-def build_model():
+def densenet121():
     densenet = DenseNet121(
         weights='imagenet',
         include_top=False,
@@ -96,6 +48,26 @@ def patch_resnext50():
     model.add(resnext50)
     model.add(GlobalAveragePooling2D())
     model.add(Dense(6, activation='sigmoid'))
+
+    return model
+
+
+def efficientnetb4(target_size):
+    efficientnet = EfficientNetB4(
+        weights='imagenet',
+        include_top=False,
+        input_shape=(target_size, target_size, 3),
+        backend=keras.backend,
+        layers=keras.layers,
+        models=keras.models,
+        utils=keras.utils
+    )
+
+    model = Sequential()
+    model.add(efficientnet)
+    model.add(GlobalAveragePooling2D())
+    model.add(Dropout(0.7))
+    model.add(Dense(102, activation='sigmoid'))
 
     return model
 
