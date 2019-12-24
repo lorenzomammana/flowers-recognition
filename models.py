@@ -10,6 +10,7 @@ from keras_applications.efficientnet import EfficientNetB4
 
 from keras import backend as K
 
+
 def densenet121():
     densenet = DenseNet121(
         weights='imagenet',

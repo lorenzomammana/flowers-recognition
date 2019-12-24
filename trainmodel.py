@@ -7,8 +7,12 @@ from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 
 import models
 import numpy as np
-import tensorflow as tf
 import preprocess_crop
+
+import os
+import tensorflow as tf
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 config = tf.ConfigProto()
 config.gpu_options.allow_growth = True
@@ -26,7 +30,7 @@ test_path = root / 'test'
 train_datagen = preprocessing.image.ImageDataGenerator(
     horizontal_flip=True,  # randomly flip images
     brightness_range=[0.7, 1.3],
-    rotation_range=60,
+    rotation_range=10,
     preprocessing_function=models.preprocessing
 )
 
@@ -64,16 +68,16 @@ if __name__ == '__main__':
 
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
 
-    earlyStopping = EarlyStopping(monitor='val_loss', patience=10, verbose=0, mode='min')
+    earlyStopping = EarlyStopping(monitor='val_acc', patience=10, verbose=1, mode='max')
     mcp_save = ModelCheckpoint((output_path / '{}.h5'.format(model_name)).absolute().as_posix(), save_best_only=True,
-                               monitor='val_loss', mode='min')
+                               monitor='val_acc', mode='max')
     reduce_lr_loss = ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=7, verbose=1, epsilon=1e-4, mode='min')
 
     STEP_SIZE_TRAIN = np.ceil(train_generator.n / train_generator.batch_size)
     STEP_SIZE_VALID = np.ceil(valid_generator.n / valid_generator.batch_size)
 
     model.fit_generator(train_generator,
-                        epochs=20,
+                        epochs=50,
                         verbose=1,
                         steps_per_epoch=STEP_SIZE_TRAIN,
                         validation_data=valid_generator,
