@@ -59,7 +59,7 @@
 %----------------------------------------------------------------------------------------
 
 \HRule \\[0.4cm]
-{ \huge \bfseries Una rete neurale convoluzionale patch-based per la prevenzione della retinopatia diabetica}\\[0.4cm] % Title of your document
+{ \huge \bfseries Overfitting}\\[0.4cm] % Title of your document
 \HRule \\[1.5cm]
  
 %----------------------------------------------------------------------------------------
@@ -99,29 +99,24 @@ The ABSTRACT is not a part of the body of the report itself. Rather, the abstrac
 \end{abstract}
 
 \section{Introduzione}
-La retinopatia diabetica è la causa principale di cecità tra le persone affette da qualsiasi tipologia di malattia diabetica. Se trattata precocemente è possibile ridurre la possibilità di perdere la vista fino al 90\%.
-Il problema principale è che nei paesi industrializzati solamente una persona su due si sottopone a controlli regolari di prevenzione e questa percentuale si riduce ulteriormente in zone rurali, sia per la non diligenza dei paziente che, soprattutto, per l'assenza di personale in grado di sopperire a tutte le richieste.
-Sviluppare un modello in grado di aiutare o ancora meglio superare le capacità di un medico nel valutare immagini retinografiche potrebbe permettera la diagnosi precoce di questa malattia anche in aree rurali salvando quindi la vista ad un numero molto elevato di persone.
-Attualmente lo stato dell'arte per un compito di questo tipo è rappresentato dalle reti neurali convoluzionali (CNN), questi modelli si sono dimostrati efficienti nel classificare immagini negli ambiti più disparati, andando molto spesso a superare le capacità discriminative di esperti nel settore.
-Una delle più grosse limitazioni delle CNN è rappresentato dalla capacità in termini di memoria delle moderne GPU, uno dei compromessi che di solito viene utilizzato è quello di ridurre la dimensione delle immagini utilizzate per permettere l'utilizzo di una rete con un numero molto elevato di parametri, in grado potenzialmente di operare meglio di una rete con un numero di parametri minore.
-Le immagini retinografiche in nostro possesso presentano una risoluzione elevata, molti studi hanno dimostrato come in ambito medicale sia generalmente infattibile ridurre la dimensione delle immagini, in quanto questo porta alla perdita di dettagli di piccola dimensione, fondamentali per ottenere una buona discriminazione.
-Per questo motivo abbiamo deciso di utilizzare un modello \textit{patch-based} di rete neurale convoluzionale; modelli di questo tipo permettono di ottenere un compromesso migliore tra capacità computazionale della rete e dimensione dell'immagine in ingresso.
-L'idea è quella di sfruttare l'intera immagine retinopatica senza perdere dettagli importanti cercando di discriminare quali sono le parti interessanti dell'immagine per poter poi usarle in maniera efficace per il compito di classificazione.
+L'obiettivo del progetto è quello di costruire un modello di machine learning per la classificazione di immagini in grado di operare bene su un dataset di piccole dimensioni comprendente un alto numero di classi simili tra di loro.
+Come è facilmente intuibile, il problema principale di operare su un dataset di questo tipo è l'overfitting del modello sui dati di training con conseguente fallimento del modello su dati nuovi. Per risolvere questo problema ci siamo concentrati sulla ricerca di modelli, iperparametri e tecniche di generalizzazione che permettessero al modello di essere in grado di operare su un dataset di test molto più ampio di quello utilizzato per l'addestramento.
+Il modello utilizzato per questo tipo di analisi è una rete neurale convoluzionale; questo tipo di modello si è dimostrato negli ultimi anni il migliore nel classificare immagini in moltissimi campi di applicazione.
+
 The introduction should provide a clear statement of the problem posed by the project, and why the problem is of interest. It should reflect the scenario, if available. If needed, the introduction also needs to present background information so that the reader can understand the significance of the problem. A brief summary of the hypotheses and the approach your group used to solve the problem should be given, possibly also including a concise introduction to theory or concepts used later to analyze and to discuss the results.
 
 
 \section{Dataset}
-Il dataset è stato scaricato dalla piattaforma kaggle (mettere link).
-E' stato costruito dal \textit{Aravind Eye Hospital} ubicato in India e contiene immagini di fondo oculare di più di 5000 pazienti.
-Le immagini hanno dimensione differente, la maggior parte sono ad alta risoluzione (>3000x2000). Ogni immagine presenta una label così definita:
+Il dataset utilizzato è il \textit{102 Category Flower Dataset} creato dai ricercato del \textit{Visual Geometry Group} di \textit{Oxford}. Il dataset è composto da 8189 immagini RGB di dimensione variabile, ogni immagine contiene uno o più fiori su sfondo neutro ed è etichettata con una singola categoria da un insieme di centodue categorie. 
+E' stata mantenuta la suddivisione del dataset definita nella pubblicazione originale, in particolare si hanno:
 \begin{itemize}
-\item 0 - assenza di retinopatia diabetica
-\item 1 - retinopatia diabetica leggera
-\item 2 - retinopatia diabetica moderata
-\item 3 - retinopatia diabetica severa
-\item 4 - retinopatia diabetica proliferativa
+\item 1020 immagini nel training set
+\item 1020 immagini nel validation set
+\item 6149 immagini nel test set
 \end{itemize}
-Come si evince facilmente, l'ordine delle label rappresenta la gravità della malattia.
+Ogni categoria è rappresentata da 10 immagini nel training set e nel validation set, mentre la proporzione di immagini per ogni categoria varia nel test set.
+La difficoltà di operare su un dataset di questo tipo è evidente, il numero di immagini è limitato mentre il test set è ampio.
+Mettere immagini dataset
 
 In this section the available data sets must be presented. The term dataset refers to any type of information source, for example web services for geolocation fall into this category. 
 In addition, all necessary data manipulation processes, such as cleaning and enrichment with external sources, must be presented and discussed.
