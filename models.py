@@ -21,8 +21,8 @@ def densenet121():
     model = Sequential()
     model.add(densenet)
     model.add(GlobalAveragePooling2D())
-    model.add(Dropout(0.5))
-    model.add(Dense(102, activation='sigmoid'))
+    model.add(Dropout(0.8))
+    model.add(Dense(102, activation='softmax'))
 
     return model
 
@@ -53,11 +53,11 @@ def patch_resnext50():
     return model
 
 
-def efficientnetb4(target_size):
+def efficientnetb4():
     efficientnet = EfficientNetB4(
         weights='imagenet',
         include_top=False,
-        input_shape=(target_size, target_size, 3),
+        input_shape=(380, 380, 3),
         backend=keras.backend,
         layers=keras.layers,
         models=keras.models,
@@ -67,18 +67,19 @@ def efficientnetb4(target_size):
     model = Sequential()
     model.add(efficientnet)
     model.add(GlobalAveragePooling2D())
-    model.add(Dropout(0.7))
-    model.add(Dense(102, activation='sigmoid'))
+    model.add(Dropout(0.8))
+    model.add(Dense(102, activation='softmax'))
 
     return model
 
 
-def patch_resnet18():
+def resnet18():
     resnet18, _ = Classifiers.get('resnet18')
 
-    base_model = resnet18(input_shape=(112, 112, 3), include_top=False)
+    base_model = resnet18(input_shape=(224, 224, 3), include_top=False, weights='imagenet')
     x = GlobalAveragePooling2D()(base_model.output)
-    output = Dense(6, activation='softmax')(x)
+    x = Dropout(0.5)(x)
+    output = Dense(102, activation='softmax')(x)
     model = Model(inputs=[base_model.input], outputs=[output])
 
     return model
