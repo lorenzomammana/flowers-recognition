@@ -12,6 +12,12 @@ import matplotlib.pyplot as plt
 import os
 import tensorflow as tf
 
+from numpy.random import seed
+from tensorflow import set_random_seed
+
+seed(42)
+set_random_seed(42)
+
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 config = tf.ConfigProto()
@@ -35,6 +41,10 @@ elif ARCHITECTURE == 'efficientnet':
     model = models.efficientnetb4()
     model_name = 'efficientnetb4'
     TARGET_SIZE = 380
+else:
+    model = models.resnet18(only_features=False)
+    model_name = 'resnet18'
+    TARGET_SIZE = 224
 
 train_datagen = preprocessing.image.ImageDataGenerator(
     horizontal_flip=True,  # randomly flip images
