@@ -219,7 +219,9 @@ Per massimizzare la generalizzazione del modello si è deciso di "aumentare" le 
 \end{itemize}
 Le immagini vengono poi normalizzate in accordo con la media e la varianza di \textit{Imagenet} come descritto nella sezione precedente.
 \subsubsection{Scelta degli iperparametri}
-Anche in questo caso vengono adottate le tecniche descritte per l'esperimento baseline.
+L'ottimizzatore utilizzato in questo caso è Adam, questo tipo di ottimizzatore definisce un learning rate adattivo per ogni layer (verificare!!!) per questo motivo dovrebbe applicare un learning rate più basso per i layer all'inizio della rete ed uno più alto per gli ultimi layer che dovrebbero modificarsi maggiormente per adattarsi al nuovo dataset.
+Per addestrare la rete e trovare il miglior learning rate vengono utilizzate le stesse tecniche descritte nella sezione precedente.
+
 
 This is the central and most important section of the report. Its objective must be to show, with linearity and clarity, the steps that have led to the definition of a decision model. The description of the working hypotheses, confirmed or denied, can be found in this section together with the description of the subsequent refining processes of the models. Comparisons between different models (e.g. heuristics vs. optimal models) in terms of quality of solutions, their explainability and execution times are welcome. 
 
