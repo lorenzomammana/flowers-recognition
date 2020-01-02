@@ -6,12 +6,12 @@ CLASSES = ["top", "trouser", "pullover", "dress", "coat",
 
 # define the minimum learning rate, maximum learning rate, batch size,
 # step size, CLR method, and number of epochs
-MIN_LR = 1e-5
-MAX_LR = 1e-2
+MIN_LR = 1e-10
+MAX_LR = 1e-1
 BATCH_SIZE = 64
 STEP_SIZE = 8
-CLR_METHOD = "triangular"
-NUM_EPOCHS = 48
+CLR_METHOD = "triangular2"
+NUM_EPOCHS = 50
 
 # define the path to the output learning rate finder plot, training
 # history plot and cyclical learning rate plot
