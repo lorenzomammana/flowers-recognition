@@ -8,7 +8,7 @@ from keras.callbacks import ModelCheckpoint, ReduceLROnPlateau, EarlyStopping
 import models
 import numpy as np
 import preprocess_crop
-
+import matplotlib.pyplot as plt
 import os
 import tensorflow as tf
 
@@ -24,8 +24,8 @@ ARCHITECTURE = sys.argv[2]
 root = Path('/home/ubuntu/flower-classification/flower_data_original/')
 output_path = Path('/home/ubuntu/flower-output/')
 train_path = root / 'train/'
-valid_path = root / 'valid'
-test_path = root / 'test'
+valid_path = root / 'valid/'
+test_path = root / 'test/'
 
 if ARCHITECTURE == 'densenet':
     model = models.densenet121()
@@ -35,10 +35,6 @@ elif ARCHITECTURE == 'efficientnet':
     model = models.efficientnetb4()
     model_name = 'efficientnetb4'
     TARGET_SIZE = 380
-else:
-    model = models.resnet18()
-    model_name = 'baseline'
-    TARGET_SIZE = 224
 
 train_datagen = preprocessing.image.ImageDataGenerator(
     horizontal_flip=True,  # randomly flip images
@@ -62,7 +58,6 @@ valid_generator = test_datagen.flow_from_directory(directory=valid_path,
                                                    batch_size=BATCH_SIZE_TRAIN,
                                                    shuffle=True,
                                                    target_size=(TARGET_SIZE, TARGET_SIZE),
-                                                   interpolation='lanczos:center',
                                                    class_mode='categorical')
 
 test_generator = test_datagen.flow_from_directory(directory=test_path,
@@ -74,7 +69,7 @@ test_generator = test_datagen.flow_from_directory(directory=test_path,
 if __name__ == '__main__':
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['acc'])
 
-    # earlyStopping = EarlyStopping(monitor='val_acc', patience=10, verbose=1, mode='max')
+    earlyStopping = EarlyStopping(monitor='val_acc', patience=10, verbose=1, mode='max')
     mcp_save_acc = ModelCheckpoint((output_path / '{}_acc.h5'.format(model_name)).absolute().as_posix(),
                                    save_best_only=True,
                                    monitor='val_acc', mode='max')
@@ -86,16 +81,36 @@ if __name__ == '__main__':
     STEP_SIZE_TRAIN = np.ceil(train_generator.n / train_generator.batch_size)
     STEP_SIZE_VALID = np.ceil(valid_generator.n / valid_generator.batch_size)
 
-    model.fit_generator(train_generator,
-                        epochs=50,
-                        verbose=1,
-                        steps_per_epoch=STEP_SIZE_TRAIN,
-                        validation_data=valid_generator,
-                        validation_steps=STEP_SIZE_VALID,
-                        callbacks=[mcp_save_acc, mcp_save_loss, reduce_lr_loss],
-                        workers=16,
-                        use_multiprocessing=False,
-                        max_queue_size=32)
+    history = model.fit_generator(train_generator,
+                                  epochs=50,
+                                  verbose=1,
+                                  steps_per_epoch=STEP_SIZE_TRAIN,
+                                  validation_data=valid_generator,
+                                  validation_steps=STEP_SIZE_VALID,
+                                  callbacks=[mcp_save_acc, mcp_save_loss, reduce_lr_loss, earlyStopping],
+                                  workers=16,
+                                  use_multiprocessing=False,
+                                  max_queue_size=32)
+
+    # Plot training & validation accuracy values
+    plt.plot(history.history['acc'])
+    plt.plot(history.history['val_acc'])
+    plt.title('Model accuracy')
+    plt.ylabel('Accuracy')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.savefig(output_path / model_name / 'training_acc.png')
+
+    plt.clf()
+
+    # Plot training & validation loss values
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('Model loss')
+    plt.ylabel('Loss')
+    plt.xlabel('Epoch')
+    plt.legend(['Train', 'Test'], loc='upper left')
+    plt.savefig(output_path / model_name / 'training_loss.png')
 
     model.load_weights(output_path / '{}_acc.h5'.format(model_name))
 
