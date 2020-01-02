@@ -4,7 +4,7 @@ from keras import Sequential, Model
 from keras.applications import DenseNet121
 from keras.callbacks import Callback
 from sklearn.metrics import cohen_kappa_score
-from keras.layers import GlobalAveragePooling2D, Dropout, Dense
+from keras.layers import GlobalAveragePooling2D, Dropout, Dense, Flatten
 from keras_applications.resnext import ResNeXt50, preprocess_input
 from keras_applications.efficientnet import EfficientNetB4
 
@@ -73,10 +73,13 @@ def efficientnetb4():
     return model
 
 
-def resnet18():
+def resnet18(only_features=False):
     resnet18, _ = Classifiers.get('resnet18')
-
+    # pip3 install -U --force-reinstall --no-dependencies git+https://github.com/datumbox/keras@fork/keras2.2.4
+    # Permette di freezare i layer evitando il freeze della batch norm
+    # Se la batch norm freeza non funziona nulla
     base_model = resnet18(input_shape=(224, 224, 3), include_top=False, weights='imagenet')
+
     x = GlobalAveragePooling2D()(base_model.output)
     x = Dropout(0.5)(x)
     output = Dense(102, activation='softmax')(x)
