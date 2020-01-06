@@ -18,11 +18,11 @@ def densenet121():
         input_shape=(224, 224, 3)
     )
 
-    model = Sequential()
-    model.add(densenet)
-    model.add(GlobalAveragePooling2D())
-    model.add(Dropout(0.5))
-    model.add(Dense(102, activation='softmax'))
+    x = GlobalAveragePooling2D()(densenet.output)
+    x = Dropout(0.5)(x)
+    x = Dense(102, activation='softmax')(x)
+
+    model = Model(densenet.input, x)
 
     return model
 
