@@ -21,7 +21,7 @@ def densenet121():
     model = Sequential()
     model.add(densenet)
     model.add(GlobalAveragePooling2D())
-    model.add(Dropout(0.8))
+    model.add(Dropout(0.5))
     model.add(Dense(102, activation='softmax'))
 
     return model
@@ -67,7 +67,7 @@ def efficientnetb4():
     model = Sequential()
     model.add(efficientnet)
     model.add(GlobalAveragePooling2D())
-    model.add(Dropout(0.8))
+    model.add(Dropout(0.5))
     model.add(Dense(102, activation='softmax'))
 
     return model
