@@ -7,7 +7,7 @@ CLASSES = ["top", "trouser", "pullover", "dress", "coat",
 # define the minimum learning rate, maximum learning rate, batch size,
 # step size, CLR method, and number of epochs
 MIN_LR = 1e-5
-MAX_LR = 1e-2
+MAX_LR = 1e-3
 BATCH_SIZE = 64
 STEP_SIZE = 6
 CLR_METHOD = "triangular"
