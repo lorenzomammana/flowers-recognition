@@ -115,7 +115,7 @@ if __name__ == '__main__':
         lrf.find(
             train_generator,
             1e-10, 1e-1,
-            epochs=5,
+            epochs=10,
             stepsPerEpoch=np.ceil((train_generator.n / float(BATCH_SIZE_TRAIN))),
             batchSize=BATCH_SIZE_TRAIN)
 
