@@ -6,3 +6,6 @@ __pycache__/
 *.gz
 *.bbl
 *.blg
+execute_all.sh
+*.bcf
+*.xml
