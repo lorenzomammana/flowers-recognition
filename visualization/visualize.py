@@ -1,6 +1,7 @@
 from pathlib import Path
 from keras import preprocessing
 import sys
+sys.path.append("..")
 from keras_applications.efficientnet import swish
 from vis.utils.utils import apply_modifications, find_layer_idx
 import models
