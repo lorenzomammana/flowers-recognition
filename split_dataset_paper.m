@@ -6,6 +6,9 @@ for i = 1:102
     mkdir(['test\' int2str(i)]);
 end
 
+load('imagelabels.mat');
+load('setid.mat');
+
 ds.Labels = labels;
 
 for i = 1:size(trnid, 2)
