@@ -108,7 +108,7 @@ Il modello utilizzato per questo tipo di analisi è una rete neurale convoluzion
 In particolare viene fatto uso di un modello preaddestrato su immagini simili, ci si aspetta quindi che la classificazione finale sia particolarmente buona nonostante i problemi iniziali derivati dal dataset.
 
 \section{Dataset}
-Il dataset utilizzato è il \textit{102 Category Flower Dataset} \cite{Nilsback08} creato dai ricercatori del \textit{Visual Geometry Group} di \textit{Oxford}. Il dataset è composto da 8189 immagini RGB di dimensione variabile, ogni immagine contiene uno o più fiori su sfondo neutro ed è etichettata con una singola categoria estratta da un insieme di centodue possibili categorie. 
+Il dataset utilizzato è il \textit{102 Category Flower Dataset} \cite{Nilsback08} creato dai ricercatori del \textit{Visual Geometry Group} di \textit{Oxford}. Il dataset è composto da 8189 immagini RGB di dimensione variabile, ogni immagine contiene uno o più fiori su sfondo neutro ed è etichettata con una singola categoria estratta da un insieme di centodue possibili categorie. Il dataset originale contiene anche i fiori segmentati dallo sfondo (Figura \ref{fig_dataset}), queste immagini possono essere usate ad esempio come ulteriore input per la rete neurale, in questo lavoro non sono state utilizzate principalmente per forzare la rete ad essere più elastica rispetto allo sfondo delle immagini.
 E' stata mantenuta la suddivisione del dataset definita nella pubblicazione originale, in particolare si hanno:
 \begin{itemize}
 \item 1020 immagini nel training set
@@ -117,11 +117,19 @@ E' stata mantenuta la suddivisione del dataset definita nella pubblicazione orig
 \end{itemize}
 Ogni categoria è rappresentata da 10 immagini nel training set e nel validation set, mentre la proporzione di immagini per ogni categoria varia nel test set.
 La difficoltà di operare su un dataset di questo tipo è evidente, il numero di immagini è limitato mentre il test set è ampio.
-Mettere immagini dataset
+\begin{figure}[H]
+\centering	
+\includegraphics[width=1.0\textwidth]{images/dataset.png} 
+\caption{Immagini di training e relativa segmentazione \cite{Nilsback08}}
+\label{fig_dataset}
+\vspace{-7mm}
+\end{figure}
+
 
 \section{Approccio metodologico}
 Per classificare le immagini nelle classi corrette si è deciso di utilizzare una rete neurale convoluzionale (CNN). Come è noto addestrare questo tipo di modello richiede un numero di immagini dell'ordine di milioni di elementi, non avendo a disposizione così tante immagini è necessario eseguire la tecnica nota come \textit{finetuning} in cui la CNN viene inizializzata con pesi calcolati su un dataset di milioni di immagini e modificati in accordo con i propri dati disponibili.
 Si è deciso quindi di utilizzare reti preaddestrate sul dataset \textit{Imagenet} contenente più di 10 milioni di immagini di cui più di trecentomila rappresentanti fiori.
+Tutti gli esperimenti sono stati effettuati su una singola 
 \subsection{Esperimento baseline}
 Considerando il fatto che il numero di immagini di training è limitato, è stato inizialmente deciso di definire un modello baseline non particolarmente complesso. Il modello scelto è una \textit{Resnet-18} \cite{he2015deep} preaddestrata su \textit{Imagenet} \cite{5206848}. Inizialmente si è provato ad utilizzare la rete come estrattore di features per valutare quanto il preaddestramento influisca sulla classificazione finale. 
 Le features estratte vengono classificate utilizzando un semplice percettrone multistrato:
@@ -165,9 +173,10 @@ Per calcolare il range su cui far variare il learning rate viene utilizzata una 
 L'algoritmo sul percettrone multistrato produce il seguente grafico:
 \begin{figure}[ht]
 \centering
-\includegraphics[width=1.0\textwidth]{images/baseline/lrfind_plot.png} 
-\label{i_baseline_finder}
+\includegraphics[width=0.8\textwidth]{images/baseline/lrfind_plot.png} 
 \caption{Output dell'algoritmo di ricerca del learning rate}
+\label{fig_baseline_finder}
+\vspace{-15mm}
 \end{figure}
 \newpage
 Dal grafico si vede come la rete cominci ad apprendere circa a partire da 1e-5 e diverga una volta superato 1e-2, questi due valori verranno quindi utilizzati come estremi per l'algoritmo di cyclical learning rate.
@@ -192,7 +201,7 @@ Non cyclical & -         & 0.478         \\ \hline
 \label{t_clr}
 \end{table}
 L'algoritmo non cyclical utilizza SGD con learning rate iniziale pari a 1e-2 e decay del learning rate di un fattore 0.1 in caso di non decrescita della loss sul set di validazione. E' evidente come l'algoritmo ciclico converga ad una soluzione decisamente migliore e soprattuto lo riesca a fare riducendo al massimo il tempo necessario per cercare il miglior learning rate per la rete.
-In tabella vengono mostrati due metodi uno definito \textit{Triangular} e l'altro definito \textit{Triangular2}, la differenza è che il secondo metodo dimezza l'ampiezza dell'intervallo di ricerca del learning rate ad ogni completamento del ciclo, questo è ben visibile plottando la variazione del learning rate nel tempo, come mostrato in figura \ref{i_lr_tr}.
+In tabella vengono mostrati due metodi uno definito \textit{Triangular} e l'altro definito \textit{Triangular2}, la differenza è che il secondo metodo dimezza l'ampiezza dell'intervallo di ricerca del learning rate ad ogni completamento del ciclo, questo è ben visibile plottando la variazione del learning rate nel tempo, come mostrato in figura \ref{fig_lr_tr}.
 
 \begin{figure}[H]
 \makebox[\linewidth][c]{%
@@ -207,8 +216,10 @@ In tabella vengono mostrati due metodi uno definito \textit{Triangular} e l'altr
 \caption{Triangular2}
 \end{subfigure}%
 }\\
+\vspace{-7mm}
 \caption{Andamento del learning rate con step size 6}
-\label{i_lr_tr}
+\label{fig_lr_tr}
+\vspace{-5mm}
 \end{figure}
 
 
@@ -233,71 +244,87 @@ Il modello viene addestrato per 50 epoche, ad ogni epoca vengono salvati i pesi 
 In tabella \ref{t_res_resnet} vengono mostrati i risultati ottenuti, si vede una netta discrepanza nei risultati ottenuti dai due algoritmi, la motivazione potrebbe essere relativa al fatto che, essendo la rete già addestrata, Adam sia in grado di pesare automaticamente in maniera minore i primi layer della rete rispetto agli ultimi garantendo una convergenza ottimale dell'algoritmo.
 Uno dei problemi riscontrati con il package \textit{Keras} utilizzato per addestrare il modello è proprio l'assenza di un modo semplice per settare il moltiplicatore del learning rate per i layer iniziali, questa opzione è generalmente presente in tutti gli altri software di ML. Dalla tabella vediamo anche come il modello addestrato su crop random delle immagini non è grado di ottenere performance a livello del modello addestrato sulle immagini non tagliate, anche questo è facilmente giustificabile mostrando come sono fatte le immagini di training e di test.
 
-%\begin{figure}[H]%
-%    \centering
-%    \subfloat[training]{{\includegraphics[width=5cm]{images/img_train} }}%
-%    \qquad
-%    \subfloat[test]{{\includegraphics[width=5cm]{images/img_test} }}%
-%    \caption{Confronto immagini di training e test}%
-%    \label{fig_train_test}%
-%\end{figure}
+\begin{figure}[H]
+  \begin{subfigure}[b]{0.45\textwidth}
+  \centering
+    \includegraphics[width=0.7\textwidth]{images/img_train}
+    \caption{Training}
+  \end{subfigure}
+  %
+   \hfill
+  \begin{subfigure}[b]{0.45\textwidth}
+  \centering
+    \includegraphics[width=0.7\textwidth]{images/img_test}
+    \caption{Test}
+  \end{subfigure}
+  \caption{Confronto immagini di training e test}
+  \vspace{-5mm}
+  \label{fig_train_test}
+\end{figure}
+
 Gran parte delle immagini sono su sfondo neutro, generalmente foglie, questo rende probabilmente più facile per la rete concentrarsi sul fiore ignorando lo sfondo, cosa che non succede se si utilizzando pezzi di immagine.
 \subsection{Esperimento 2 - Finetuning Densenet-121}
 La Densenet-121 \cite{huang2016densely} è un tipo di architettura considerato un'evoluzione della precedente Resnet, la rete è estremamente più profonda, aumenta il rischio di overfitting sui dati, ma dovrebbe essere in grado di ottenere risultati superiori al modello addestrato precedentemente. Le medesime tecniche di data augmentation e addestramento descritte nella sezione precedente sono utilizzate per addestrare il modello.
-Anche in questo caso, come visibile in tabella \ref{t_res_densenet} Adam ottiene risultati leggermente superiori rispetto ad SGD, vi è inoltre un netto aumento del 5\& rispetto ai risultati prodotti con il modello precedente.
+Anche in questo caso, come visibile in tabella \ref{t_res_densenet} Adam ottiene risultati leggermente superiori rispetto ad SGD, vi è inoltre un netto aumento del 5\% rispetto ai risultati prodotti con il modello precedente.
 \subsection{Esperimento 3 - Finetuning EfficientnetB4}
 Infine è stato testata una delle architetture più interessanti proposte in letteratura negli ultimi anni, la cosiddetta Efficientnet \cite{tan2019efficientnet}.
-Questo tipo di architettura è stato costruito tramite tecniche automatiche di ricerca e riscalamento di architetture per reti neurali in modo tale da massimizzare contemporaneamente l'accuratezza della rete ed il numero di operazioni eseguite al secondo .
+Questo tipo di architettura è stato costruito tramite tecniche automatiche di ricerca e riscalamento di architetture per reti neurali in modo tale da massimizzare contemporaneamente l'accuratezza della rete ed il numero di operazioni eseguite al secondo.
+Come si vede dal grafico, la efficientnet è in grado di ottenere performance comparabili a modelli con dieci volte il numero di parametri da addestrare. 
 \begin{figure}[ht]
 \centering
-\includegraphics[width=1.0\textwidth]{images/efficientnet} 
-\label{i_efficientnet}
+\includegraphics[width=0.75\textwidth]{images/efficientnet} 
+\label{fig_efficientnet}
 \caption{Confronto accuratezza rispetto al numero di parametri su imagenet}
 \end{figure}
-
-Come si vede dal grafico, la efficientnet è in grado di ottenere performance comparabili a modelli con dieci volte il numero di parametri da addestrare. La scelta di utilizzare il modello B4 è relativa al fatto di essere il modello migliore abbastanza leggero da stare sulla GPU utilizzata.
+La scelta di utilizzare il modello B4 è relativa al fatto di essere il modello migliore abbastanza leggero da stare sulla GPU utilizzata.
 L'input di questa rete è costituito da immagini di dimensione 380x380, il numero di immagini per batch è stato ridotto a 8 per non incappare in overflow della memoria.
 Utilizzando le stesse tecniche di addestramento già descritte si ottengono i risultati in tabella, anche in questo caso Adam funziona leggermente meglio di SGD e otteniamo un ulteriore aumento di accuratezza rispetto alla Densenet di circa il 5\%.
 \subsection{Cosa ha appreso la rete?}
 Per verificare su quali parti dell'immagine la rete fa maggiormente riferimento per eseguire la classificazione utilizziamo due metodi ben noti in letteratura, le \textit{Saliency Maps} \cite{simonyan2013deep} e il grad-CAM \cite{Selvaraju_2019}.
 \subsubsection{Saliency maps}
 L'idea delle \textit{Saliency maps} è molto semplice, si visualizzano i gradienti di un'immagine in ingresso rispetto alla sua label, questa mappa dei gradienti indica quali sono le zone che più influiscono sulla classificazione corretta dell'immagine.
-%\begin{figure}[H]%
-%    \centering
-%    \subfloat[input]{{\includegraphics[width=5cm]{images/saliency-input} }}%
-%    \qquad
-%    \subfloat[saliency map]{{\includegraphics[width=5cm]{images/saliency-output} }}%
-%    \caption{Esempio di saliency map estratto dalla Desnenet121}%
-%    \label{fig_saliency}%
-%\end{figure}
+
+\begin{figure}[H]
+  \begin{subfigure}[b]{0.45\textwidth}
+  \centering
+    \includegraphics[width=0.7\textwidth]{images/saliency-input}
+    \caption{Input}
+  \end{subfigure}
+  %
+   \hfill
+  \begin{subfigure}[b]{0.45\textwidth}
+  \centering
+    \includegraphics[width=0.7\textwidth]{images/saliency-output}
+    \caption{Saliency map}
+  \end{subfigure}
+  \caption{Esempio di saliency map estratto dalla Desnenet121}
+  \label{fig_saliency}
+\end{figure}
+
 Come si vede in figura \ref{fig_saliency} la maggior parte dei pixel che influiscono sulla classificazione è contenuta all'interno del fiore, questo è un buon indicatore della bontà del modello.
 \subsubsection{grad-CAM}
 Simile alle \textit{saliency maps} il grad-CAM (Class Activation Map) utilizza il gradiente dell'ultimo layer convoluzionale invece che quello dell'output, questo permette di utilizzare le informazioni spaziali perse nel passaggio da convoluzionale a completamente connesso.
-%\begin{figure}[H]%
-%    \centering
-%    \subfloat[input]{{\includegraphics[width=5cm]{images/saliency-input} }}%
-%    \qquad
-%    \subfloat[grad-CAM]{{\includegraphics[width=5cm]{images/gradcam_guided} }}%
-%    \caption{Esempio di grad-CAM estratto dalla Desnenet121}%
-%    \label{fig_grad_cam}%
-%\end{figure}
+
+\begin{figure}[H]
+  \begin{subfigure}[b]{0.45\textwidth}
+  \centering
+    \includegraphics[width=0.7\textwidth]{images/saliency-input}
+    \caption{Input}
+  \end{subfigure}
+  %
+   \hfill
+  \begin{subfigure}[b]{0.45\textwidth}
+  \centering
+    \includegraphics[width=0.7\textwidth]{images/gradcam_guided}
+    \caption{Saliency map}
+  \end{subfigure}
+  \caption{Esempio di grad-CAM estratto dalla Desnenet121}
+  \label{fig_grad_cam}
+\end{figure}
+
 In questo caso, come si vede chiaramente in figura \ref{fig_grad_cam}, è ancora più evidente come il fiore sia la componente principale nell'apprendimento della rete, si nota inoltre che l'area centrale è particolarmente discriminativa.
-This is the central and most important section of the report. Its objective must be to show, with linearity and clarity, the steps that have led to the definition of a decision model. The description of the working hypotheses, confirmed or denied, can be found in this section together with the description of the subsequent refining processes of the models. Comparisons between different models (e.g. heuristics vs. optimal models) in terms of quality of solutions, their explainability and execution times are welcome. 
 
-Do not attempt to describe all the code in the system, and do not include large pieces of code in this section, use pseudo-code where necessary. Complete source code should be provided separately (in Appendixes, as separated material or as a link to an on-line repo). Instead pick out and describe just the pieces of code which, for example:
-\begin{itemize}
-\item are especially critical to the operation of the system;
-\item you feel might be of particular interest to the reader for some reason;
-\item  illustrate a non-standard or innovative way of implementing an algorithm, data
-structure, etc..
-\end{itemize}
-
-You should also mention any unforeseen problems you encountered when implementing the
-system and how and to what extent you overcame them. Common problems are:
- difficulties involving existing software.
-
-
-\section{Results and Evaluation}
+\section{Risultati ottenuti}
 In questa sezione vengono riportari i risultati ottenuti sul test quando si utilizzano i migliori modelli addestrati oltre che sul training anche sul validation set. I risultati sono mostrati in tabella \ref{t_res}.
 \begin{table}[H]
 \centering
@@ -329,14 +356,14 @@ LG-CNN \cite{XIE2017118}                 & 0.9660            \\ \hline
 \end{tabular}
 \label{t_conf}
 \end{table}
-La combinazione di moderne architetture e tecniche di addestramento è in grado di ottenere risultati comparabili a tecniche molto più sofisticate sviluppate da ricercatori esperti.
-\section{Discussion}
-The discussion section aims at interpreting the results in light of the project's objectives. The most important goal of this section is to interpret the results so that the reader is informed of the insight or answers that the results provide. This section should also present an evaluation of the particular approach taken by the group. For example: Based on the results, how could the experimental procedure be improved? What additional, future work may be warranted? What recommendations can be drawn?
+\section{Discussione}
+Gli obiettivi discussi inizialmente sono stati raggiunti, grazie ala combinazione di moderne architetture e tecniche di addestramento si è in grado di ottenere risultati comparabili a tecniche molto più sofisticate sviluppate da ricercatori esperti. Ci si aspettava dei risultati migliori per quanto riguarda l'addestramento delle reti su ritagli di immagini, questo tipo di modelli potrebbero funzionare meglio di quelli addestrati sulle intere immagini se testati su un dataset più complesso. Per ottenere un ulteriore aumento delle performance potrebbe essere possibile integrare le segmentazioni delle immagini come canale di input per la rete, questo dovrebbe migliorare sicuramente le performance sul dataset in oggetto, ma richiederebbe la conoscenza di queste immagini anche nel caso si volesse testare la rete su dati nuovi, limitandone l'utilizzo reale.
 
+\section{Conclusioni}
+Classificare un dataset con molte classi simili tra di loro è ormai possibile grazie agli incredibili avanzamenti in materia di ottimizzazione e architetture di reti neurali. Come mostrato in questo lavoro il semplice utilizzo di tecniche moderne permette di ottenere performance estremamente elevate, senza dover necessariamente andare ad inventare architetture o algoritmi inutilmente più complessi. In un mondo sempre più indirizzato verso l'autoML la scelta di utilizzare tecniche di ottimizzazione e architetture automatizzate sembra la scelta più sensata, nonostante ciò l'intervento umano richiesto è comunque ancora parecchio evidente. Come già citato in precedenza ci sono alcune tecniche testabili in futuro per aumentare ulteriormente le performance, sarebbe inoltre interessante costruire un nuovo dataset con le stesse classi, ma molto più grande e complesso, per verificare ulteriormente quali tecniche funzionano realmente meglio. Come si è visto anche una semplice Resnet18, architettura proposta cinque anni fa e non particolarmente profonda ottiene delle performance superiori al 90\%. Il dataset in oggetto, proposto ormai nel lontano 2008 è quasi vicino al punto in cui una rete neurale è perfettamente in grado di classificarlo!
 
-\section{Conclusions}
-Conclusions should summarize the central points made in the Discussion section, reinforcing for the reader the value and implications of the work. If the results were not definitive, specific future work that may be needed can be (briefly) described. The conclusions should never contain ``surprises''. Therefore, any conclusions should be based on observations and data already discussed. It is considered extremely bad form to introduce new data in the conclusions.
-
+\section*{Ringraziamenti}
+Gli autori ringraziano il supporto del Consortium GARR per aver permesso l'utilizzo di una Nvidia Tesla V100 su cui sono stati eseguiti tutti gli esperimenti.
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
