@@ -108,7 +108,7 @@ Il modello utilizzato per questo tipo di analisi è una rete neurale convoluzion
 In particolare viene fatto uso di un modello preaddestrato su immagini simili, ci si aspetta quindi che la classificazione finale sia particolarmente buona nonostante i problemi iniziali derivati dal dataset.
 
 \section{Dataset}
-Il dataset utilizzato è il \textit{102 Category Flower Dataset} \cite{Nilsback08} creato dai ricercatori del \textit{Visual Geometry Group} di \textit{Oxford}. Il dataset è composto da 8189 immagini RGB di dimensione variabile, ogni immagine contiene uno o più fiori su sfondo neutro ed è etichettata con una singola categoria estratta da un insieme di centodue possibili categorie. Il dataset originale contiene anche i fiori segmentati dallo sfondo (Figura \ref{fig_dataset}), queste immagini possono essere usate ad esempio come ulteriore input per la rete neurale, in questo lavoro non sono state utilizzate principalmente per forzare la rete ad essere più elastica rispetto allo sfondo delle immagini.
+Il dataset utilizzato è il \textit{102 Category Flower Dataset} \cite{Nilsback08} creato dai ricercatori del \textit{Visual Geometry Group} di \textit{Oxford}. Il dataset è composto da 8189 immagini RGB di dimensione variabile, ogni immagine contiene uno o più fiori su sfondo neutro ed è etichettata con una singola categoria estratta da un insieme di centodue possibili categorie. Il dataset originale contiene anche i fiori segmentati dallo sfondo (Figura \ref{fig_dataset}), queste immagini possono essere usate ad esempio come ulteriore input per la rete neurale. In questo lavoro non sono state utilizzate principalmente per forzare la rete ad essere più elastica rispetto allo sfondo delle immagini.
 E' stata mantenuta la suddivisione del dataset definita nella pubblicazione originale, in particolare si hanno:
 \begin{itemize}
 \item 1020 immagini nel training set
@@ -129,9 +129,8 @@ La difficoltà di operare su un dataset di questo tipo è evidente, il numero di
 \section{Approccio metodologico}
 Per classificare le immagini nelle classi corrette si è deciso di utilizzare una rete neurale convoluzionale (CNN). Come è noto addestrare questo tipo di modello richiede un numero di immagini dell'ordine di milioni di elementi, non avendo a disposizione così tante immagini è necessario eseguire la tecnica nota come \textit{finetuning} in cui la CNN viene inizializzata con pesi calcolati su un dataset di milioni di immagini e modificati in accordo con i propri dati disponibili.
 Si è deciso quindi di utilizzare reti preaddestrate sul dataset \textit{Imagenet} contenente più di 10 milioni di immagini di cui più di trecentomila rappresentanti fiori.
-Tutti gli esperimenti sono stati effettuati su una singola 
 \subsection{Esperimento baseline}
-Considerando il fatto che il numero di immagini di training è limitato, è stato inizialmente deciso di definire un modello baseline non particolarmente complesso. Il modello scelto è una \textit{Resnet-18} \cite{he2015deep} preaddestrata su \textit{Imagenet} \cite{5206848}. Inizialmente si è provato ad utilizzare la rete come estrattore di features per valutare quanto il preaddestramento influisca sulla classificazione finale. 
+Considerando il fatto che il numero di immagini di training è limitato, è stato inizialmente deciso di definire un modello baseline non particolarmente complesso. Il modello scelto è una \textit{Resnet18} \cite{he2015deep} preaddestrata su \textit{Imagenet} \cite{5206848}. Inizialmente si è provato ad utilizzare la rete come estrattore di features per valutare quanto il preaddestramento influisca sulla classificazione finale. 
 Le features estratte vengono classificate utilizzando un semplice percettrone multistrato:
 \begin{table}[H]
 \centering
@@ -145,7 +144,7 @@ dense\_3 (Dense) & (None, 102)  & 13158    \\ \hline
 \end{tabular}
 \label{t_mlp}
 \end{table}
-L'architettura è stata scelta facendo in modo che il quadrato del numero di neuroni di ogni layer sia circa pari al numero di neuroni contenuti nel layer precedente.
+L'architettura è stata scelta eseguendo un test automatico di più configurazioni in parallelo.
 
 \subsubsection{Preprocessing e Data augmentation}
 Prima di procedere con l'estrazione delle features le immagini vengono normalizzate per avere media nulla e varianza unitaria utilizzando la formula:
@@ -204,6 +203,7 @@ L'algoritmo non cyclical utilizza SGD con learning rate iniziale pari a 1e-2 e d
 In tabella vengono mostrati due metodi uno definito \textit{Triangular} e l'altro definito \textit{Triangular2}, la differenza è che il secondo metodo dimezza l'ampiezza dell'intervallo di ricerca del learning rate ad ogni completamento del ciclo, questo è ben visibile plottando la variazione del learning rate nel tempo, come mostrato in figura \ref{fig_lr_tr}.
 
 \begin{figure}[H]
+\vspace{-10mm}
 \makebox[\linewidth][c]{%
 \begin{subfigure}[b]{.6\textwidth}
 \centering
@@ -224,25 +224,25 @@ In tabella vengono mostrati due metodi uno definito \textit{Triangular} e l'altr
 
 
 Da questa prima valutazione si è in grado di notare come il preaddestramento influisca decisamente sulla classificazione del dataset.
-\subsection{Esperimento 1 - Finetuning Resnet-18}
+\subsection{Esperimento 1 - Finetuning Resnet18}
 La sola estrazione delle feature non è ovviamente abbastanza per ottenere delle performance soddisfacenti sul test set, si è proceduto quindi ad eseguire il finetuning dell'intera rete in modo tale da aggiornare i pesi per renderli più compatibili con il nuovo dataset.
-Adesso invece di accodare un percettrone multistrato all'ultimo layer della rete viene applicato un layer di average pooling seguito da un layer di dropout ed un layer completamente connesso contenente 102 neuroni.
+Adesso invece di accodare un percettrone multistrato all'ultimo layer della rete viene applicato un layer di average pooling seguito da un layer di dropout ($\rho$ = 0.5) ed un layer completamente connesso contenente 102 neuroni.
 \subsubsection{Preprocessing e Data augmentation}
-Per massimizzare la generalizzazione del modello si è deciso di "aumentare" le immagini di training applicando i seguenti effetti durante la fase di training:
+Per massimizzare la generalizzazione del modello si è deciso di "aumentare" le immagini di training applicando i seguenti effetti:
 \begin{itemize}
-\item Flip orizzontale
+\item Flip orizzontale random
 \item Aumento/riduzione della luminosità ($ \gamma \in $ [0.7, 1.3])
 \item Rotazione in un angolo di $\pm$ 10°
-Il modello viene inoltre addestrato su crop random delle immagini a cui viene applicata la stessa data augmentation per verificare se ciò aumenti la generalizzazione.
 \end{itemize}
+Il modello viene inoltre addestrato su crop random delle immagini a cui viene applicata la stessa data augmentation per verificare se ciò aumenti la generalizzazione.
 Le immagini vengono poi normalizzate in accordo con la media e la varianza di \textit{Imagenet} come descritto nella sezione precedente.
 \subsubsection{Scelta degli iperparametri}
 Per addestrare la rete vengono utilizzate le stesse tecniche descritte nella sezione relativa al modello baseline. Il finetuning viene però effettuato utilizzando sia SGD che Adam \cite{kingma2014adam} per verificare le eventuali differenze in termini di accuratezza.
 Per ognuno dei due ottimizzatori viene calcolato il range da utilizzare per l'addestramento tramite learning rate ciclico.
-Il modello viene addestrato per 50 epoche, ad ogni epoca vengono salvati i pesi nel caso che la loss sul validation set sia minore del migliore modello precedente e nel caso l'accuratezza sul validation set sia maggiore.
+Il modello viene addestrato per 50 epoche, ad ogni epoca vengono salvati i pesi nel caso in cui la loss sul validation set sia minore del miglior modello precedente e nel caso l'accuratezza sul validation set sia maggiore.
 \subsubsection{Risultati ottenuti}
 In tabella \ref{t_res_resnet} vengono mostrati i risultati ottenuti, si vede una netta discrepanza nei risultati ottenuti dai due algoritmi, la motivazione potrebbe essere relativa al fatto che, essendo la rete già addestrata, Adam sia in grado di pesare automaticamente in maniera minore i primi layer della rete rispetto agli ultimi garantendo una convergenza ottimale dell'algoritmo.
-Uno dei problemi riscontrati con il package \textit{Keras} utilizzato per addestrare il modello è proprio l'assenza di un modo semplice per settare il moltiplicatore del learning rate per i layer iniziali, questa opzione è generalmente presente in tutti gli altri software di ML. Dalla tabella vediamo anche come il modello addestrato su crop random delle immagini non è grado di ottenere performance a livello del modello addestrato sulle immagini non tagliate, anche questo è facilmente giustificabile mostrando come sono fatte le immagini di training e di test.
+Uno dei problemi riscontrati con il package \textit{Keras}, utilizzato per addestrare il modello, è proprio l'assenza di un modo semplice per settare il moltiplicatore del learning rate per i layer iniziali, questa opzione è generalmente presente in tutti gli altri software di ML. Dalla tabella vediamo anche come il modello addestrato su crop random delle immagini non è grado di ottenere performance a livello del modello addestrato sulle immagini non tagliate, anche questo è facilmente giustificabile mostrando come sono fatte le immagini di training e di test.
 
 \begin{figure}[H]
   \begin{subfigure}[b]{0.45\textwidth}
@@ -263,26 +263,28 @@ Uno dei problemi riscontrati con il package \textit{Keras} utilizzato per addest
 \end{figure}
 
 Gran parte delle immagini sono su sfondo neutro, generalmente foglie, questo rende probabilmente più facile per la rete concentrarsi sul fiore ignorando lo sfondo, cosa che non succede se si utilizzando pezzi di immagine.
-\subsection{Esperimento 2 - Finetuning Densenet-121}
+\subsection{Esperimento 2 - Finetuning Densenet121}
 La Densenet-121 \cite{huang2016densely} è un tipo di architettura considerato un'evoluzione della precedente Resnet, la rete è estremamente più profonda, aumenta il rischio di overfitting sui dati, ma dovrebbe essere in grado di ottenere risultati superiori al modello addestrato precedentemente. Le medesime tecniche di data augmentation e addestramento descritte nella sezione precedente sono utilizzate per addestrare il modello.
 Anche in questo caso, come visibile in tabella \ref{t_res_densenet} Adam ottiene risultati leggermente superiori rispetto ad SGD, vi è inoltre un netto aumento del 5\% rispetto ai risultati prodotti con il modello precedente.
 \subsection{Esperimento 3 - Finetuning EfficientnetB4}
 Infine è stato testata una delle architetture più interessanti proposte in letteratura negli ultimi anni, la cosiddetta Efficientnet \cite{tan2019efficientnet}.
 Questo tipo di architettura è stato costruito tramite tecniche automatiche di ricerca e riscalamento di architetture per reti neurali in modo tale da massimizzare contemporaneamente l'accuratezza della rete ed il numero di operazioni eseguite al secondo.
-Come si vede dal grafico, la efficientnet è in grado di ottenere performance comparabili a modelli con dieci volte il numero di parametri da addestrare. 
-\begin{figure}[ht]
+Come si vede dal grafico, la Efficientnet è in grado di ottenere performance comparabili a modelli con dieci volte il numero di parametri da addestrare.
+\begin{figure}[H]
+
 \centering
-\includegraphics[width=0.75\textwidth]{images/efficientnet} 
+\includegraphics[width=0.6\textwidth]{images/efficientnet} 
 \label{fig_efficientnet}
 \caption{Confronto accuratezza rispetto al numero di parametri su imagenet}
-\end{figure}
-La scelta di utilizzare il modello B4 è relativa al fatto di essere il modello migliore abbastanza leggero da stare sulla GPU utilizzata.
+\end{figure} 
+La scelta di utilizzare il modello B4 è relativa al fatto di essere il modello migliore abbastanza leggero da essere contenuto sulla GPU utilizzata.
 L'input di questa rete è costituito da immagini di dimensione 380x380, il numero di immagini per batch è stato ridotto a 8 per non incappare in overflow della memoria.
-Utilizzando le stesse tecniche di addestramento già descritte si ottengono i risultati in tabella, anche in questo caso Adam funziona leggermente meglio di SGD e otteniamo un ulteriore aumento di accuratezza rispetto alla Densenet di circa il 5\%.
-\subsection{Cosa ha appreso la rete?}
+Utilizzando le stesse tecniche di addestramento già descritte si ottengono i risultati in tabella \ref{t_res_efficientnet}, anche in questo caso Adam funziona leggermente meglio di SGD e otteniamo un ulteriore aumento di accuratezza rispetto alla Densenet di circa il 5\%.
+
+\subsection{Verifica dell'apprendimento della rete}
 Per verificare su quali parti dell'immagine la rete fa maggiormente riferimento per eseguire la classificazione utilizziamo due metodi ben noti in letteratura, le \textit{Saliency Maps} \cite{simonyan2013deep} e il grad-CAM \cite{Selvaraju_2019}.
 \subsubsection{Saliency maps}
-L'idea delle \textit{Saliency maps} è molto semplice, si visualizzano i gradienti di un'immagine in ingresso rispetto alla sua label, questa mappa dei gradienti indica quali sono le zone che più influiscono sulla classificazione corretta dell'immagine.
+L'idea delle \textit{Saliency maps} è molto semplice, si visualizzano i gradienti di un'immagine in ingresso rispetto alla sua label calcolati sul layer di classificazione. Questa mappa dei gradienti indica quali sono le zone che più influiscono sulla classificazione corretta dell'immagine.
 
 \begin{figure}[H]
   \begin{subfigure}[b]{0.45\textwidth}
@@ -325,21 +327,21 @@ Simile alle \textit{saliency maps} il grad-CAM (Class Activation Map) utilizza i
 In questo caso, come si vede chiaramente in figura \ref{fig_grad_cam}, è ancora più evidente come il fiore sia la componente principale nell'apprendimento della rete, si nota inoltre che l'area centrale è particolarmente discriminativa.
 
 \section{Risultati ottenuti}
-In questa sezione vengono riportari i risultati ottenuti sul test quando si utilizzano i migliori modelli addestrati oltre che sul training anche sul validation set. I risultati sono mostrati in tabella \ref{t_res}.
+In questa sezione vengono riportari i risultati ottenuti sul test set quando si utilizzano i migliori modelli addestrati oltre che sul training anche sul validation set. I risultati sono mostrati in tabella \ref{t_res}.
 \begin{table}[H]
 \centering
 \caption{Risultati ottenuti}
 \begin{tabular}{|l|l|l|l|l|l|l|}
 \hline
-architettura   & metodo      & step & lr range        & batch size & crop & test acc \\ \hline
-resnet18       & triangular  & 2    & {[}1e-6,5e-4{]} & 64         & No   & 0.9187   \\ \hline
-Densenet121    & triangular  & 4    & {[}1e-5,1e-3{]} & 64         & No   & 0.9455   \\ \hline
-efficientnetB4 & triangular2 & 4    & {[}1e-5,1e-3{]} & 8          & No   & 0.9719   \\ \hline
+\textbf{architettura}   & \textbf{metodo}     & \textbf{step} & \textbf{lr range}        & \textbf{batch size} & \textbf{crop} & \textbf{test acc} \\ \hline
+Resnet18       & Triangular  & 2    & {[}1e-6,5e-4{]} & 64         & No   & 0.9187   \\ \hline
+Densenet121    & Triangular  & 4    & {[}1e-5,1e-3{]} & 64         & No   & 0.9455   \\ \hline
+EfficientnetB4 & Triangular2 & 4    & {[}1e-5,1e-3{]} & 8          & No   & \textbf{0.9719}   \\ \hline
 \end{tabular}
 \label{t_res}
 \end{table}
 
-Viene poi mostrato il confronto con gli algoritmi proposti in letteratura, alcuni degli algoritmi proposti (\cite{Nilsback08} \cite{yaqub} \cite{XIE2017118}) fanno uso di fiori segmentati per la classificazione, questa tecnica potrebbe potenzialmente rendere ulteriormente migliore la classificazione dei nostri modelli se venisse applicata.
+Viene poi mostrato il confronto con gli algoritmi proposti in letteratura, alcuni di questi (\cite{Nilsback08}, \cite{yaqub}, \cite{XIE2017118}) fanno uso anche dei fiori segmentati per la classificazione.
 \begin{table}[H]
 \centering
 \caption{Confronto con risultati in letteratura}
@@ -358,12 +360,13 @@ LG-CNN \cite{XIE2017118}                 & 0.9660            \\ \hline
 \end{table}
 \section{Discussione}
 Gli obiettivi discussi inizialmente sono stati raggiunti, grazie ala combinazione di moderne architetture e tecniche di addestramento si è in grado di ottenere risultati comparabili a tecniche molto più sofisticate sviluppate da ricercatori esperti. Ci si aspettava dei risultati migliori per quanto riguarda l'addestramento delle reti su ritagli di immagini, questo tipo di modelli potrebbero funzionare meglio di quelli addestrati sulle intere immagini se testati su un dataset più complesso. Per ottenere un ulteriore aumento delle performance potrebbe essere possibile integrare le segmentazioni delle immagini come canale di input per la rete, questo dovrebbe migliorare sicuramente le performance sul dataset in oggetto, ma richiederebbe la conoscenza di queste immagini anche nel caso si volesse testare la rete su dati nuovi, limitandone l'utilizzo reale.
-
+\newpage
 \section{Conclusioni}
-Classificare un dataset con molte classi simili tra di loro è ormai possibile grazie agli incredibili avanzamenti in materia di ottimizzazione e architetture di reti neurali. Come mostrato in questo lavoro il semplice utilizzo di tecniche moderne permette di ottenere performance estremamente elevate, senza dover necessariamente andare ad inventare architetture o algoritmi inutilmente più complessi. In un mondo sempre più indirizzato verso l'autoML la scelta di utilizzare tecniche di ottimizzazione e architetture automatizzate sembra la scelta più sensata, nonostante ciò l'intervento umano richiesto è comunque ancora parecchio evidente. Come già citato in precedenza ci sono alcune tecniche testabili in futuro per aumentare ulteriormente le performance, sarebbe inoltre interessante costruire un nuovo dataset con le stesse classi, ma molto più grande e complesso, per verificare ulteriormente quali tecniche funzionano realmente meglio. Come si è visto anche una semplice Resnet18, architettura proposta cinque anni fa e non particolarmente profonda ottiene delle performance superiori al 90\%. Il dataset in oggetto, proposto ormai nel lontano 2008 è quasi vicino al punto in cui una rete neurale è perfettamente in grado di classificarlo!
+Classificare un dataset con molte classi simili tra di loro è ormai possibile grazie agli incredibili avanzamenti in materia di ottimizzazione e architetture di reti neurali. Come mostrato in questo lavoro il semplice utilizzo di tecniche moderne permette di ottenere performance estremamente elevate, senza dover necessariamente andare ad inventare architetture o algoritmi molto più complessi. In un mondo sempre più indirizzato verso l'autoML la scelta di utilizzare tecniche di ottimizzazione e architetture automatizzate sembra la più sensata, nonostante ciò l'intervento umano richiesto è comunque ancora parecchio evidente. Come già citato in precedenza ci sono alcune tecniche testabili in futuro per aumentare ulteriormente le performance, sarebbe inoltre interessante costruire un nuovo dataset con le stesse classi, ma molto più grande e complesso, per verificare ulteriormente quali tecniche funzionano realmente meglio. Come si è visto anche una semplice Resnet18, architettura proposta cinque anni fa e non particolarmente profonda ottiene delle performance superiori al 90\%. Il dataset in oggetto, proposto ormai nel lontano 2008 è quasi vicino al punto in cui una rete neurale è perfettamente in grado di classificarlo!
 
 \section*{Ringraziamenti}
 Gli autori ringraziano il supporto del Consortium GARR per aver permesso l'utilizzo di una Nvidia Tesla V100 su cui sono stati eseguiti tutti gli esperimenti.
+\newpage
 \bibliographystyle{IEEEtran}
 \bibliography{references}
 
@@ -378,21 +381,21 @@ Gli autori ringraziano il supporto del Consortium GARR per aver permesso l'utili
 \hline
 \textbf{tipo} & \textbf{ott} & \textbf{crop} & \textbf{metodo} & \textbf{step} & \textbf{test acc} & \textbf{tipo} & \textbf{ott} & \textbf{crop} & \textbf{method} & \textbf{step} & \textbf{test acc} \\ \hline
 acc           & sgd          & base          & triangular      & 2             & 0.7627            & acc           & adam         & base          & triangular      & 2             & 0.8619   \\ \hline
-loss          & sgd          & base          & triangular      & 2             & 0.7627            & loss          & adam         & base          & triangular      & 2             & \textbf{0.8632}            \\ \hline
-acc           & sgd          & base          & triangular      & 4             & 0.7528            & acc           & adam         & base          & triangular      & 4             & 0.8554            \\ \hline
-loss          & sgd          & base          & triangular      & 4             & 0.7583            & loss          & adam         & base          & triangular      & 4             & 0.8578            \\ \hline
-acc           & sgd          & base          & triangular      & 6             & 0.7436            & acc           & adam         & base          & triangular      & 6             & 0.8510            \\ \hline
-loss          & sgd          & base          & triangular      & 6             & 0.7436            & loss          & adam         & base          & triangular      & 6             & 0.8537            \\ \hline
-acc           & sgd          & base          & triangular      & 8             & 0.7604            & acc           & adam         & base          & triangular      & 8             & 0.8565            \\ \hline
-loss          & sgd          & base          & triangular      & 8             & 0.7604            & loss          & adam         & base          & triangular      & 8             & 0.8603            \\ \hline
-acc           & sgd          & base          & triangular2     & 2             & 0.2663            & acc           & adam         & base          & triangular2     & 2             & 0.8248            \\ \hline
-loss          & sgd          & base          & triangular2     & 2             & 0.2663            & loss          & adam         & base          & triangular2     & 2             & 0.8246            \\ \hline
-acc           & sgd          & base          & triangular2     & 4             & 0.5077            & acc           & adam         & base          & triangular2     & 4             & 0.8388            \\ \hline
-loss          & sgd          & base          & triangular2     & 4             & 0.5077            & loss          & adam         & base          & triangular2     & 4             & 0.8485            \\ \hline
-acc           & sgd          & base          & triangular2     & 6             & 0.6111            & acc           & adam         & base          & triangular2     & 6             & 0.8414            \\ \hline
-loss          & sgd          & base          & triangular2     & 6             & 0.6111            & loss          & adam         & base          & triangular2     & 6             & 0.8497            \\ \hline
-acc           & sgd          & base          & triangular2     & 8             & 0.6638            & acc           & adam         & base          & triangular2     & 8             & 0.8472            \\ \hline
-loss          & sgd          & base          & triangular2     & 8             & 0.6640            & loss          & adam         & base          & triangular2     & 8             & 0.8484            \\ \hline
+loss          & sgd          & base          & triangular      & 2             & 0.7627            & loss          & adam         & No          & triangular      & 2             & \textbf{0.8632}            \\ \hline
+acc           & sgd          & No          & triangular      & 4             & 0.7528            & acc           & adam         & No          & triangular      & 4             & 0.8554            \\ \hline
+loss          & sgd          & No          & triangular      & 4             & 0.7583            & loss          & adam         & No          & triangular      & 4             & 0.8578            \\ \hline
+acc           & sgd          & No          & triangular      & 6             & 0.7436            & acc           & adam         & No          & triangular      & 6             & 0.8510            \\ \hline
+loss          & sgd          & No          & triangular      & 6             & 0.7436            & loss          & adam         & No          & triangular      & 6             & 0.8537            \\ \hline
+acc           & sgd          & No          & triangular      & 8             & 0.7604            & acc           & adam         & No          & triangular      & 8             & 0.8565            \\ \hline
+loss          & sgd          & No          & triangular      & 8             & 0.7604            & loss          & adam         & No          & triangular      & 8             & 0.8603            \\ \hline
+acc           & sgd          & No          & triangular2     & 2             & 0.2663            & acc           & adam         & No          & triangular2     & 2             & 0.8248            \\ \hline
+loss          & sgd          & No          & triangular2     & 2             & 0.2663            & loss          & adam         & No          & triangular2     & 2             & 0.8246            \\ \hline
+acc           & sgd          & No          & triangular2     & 4             & 0.5077            & acc           & adam         & No          & triangular2     & 4             & 0.8388            \\ \hline
+loss          & sgd          & No          & triangular2     & 4             & 0.5077            & loss          & adam         & No          & triangular2     & 4             & 0.8485            \\ \hline
+acc           & sgd          & No          & triangular2     & 6             & 0.6111            & acc           & adam         & No          & triangular2     & 6             & 0.8414            \\ \hline
+loss          & sgd          & No          & triangular2     & 6             & 0.6111            & loss          & adam         & No          & triangular2     & 6             & 0.8497            \\ \hline
+acc           & sgd          & No          & triangular2     & 8             & 0.6638            & acc           & adam         & No          & triangular2     & 8             & 0.8472            \\ \hline
+loss          & sgd          & No          & triangular2     & 8             & 0.6640            & loss          & adam         & No          & triangular2     & 8             & 0.8484            \\ \hline
 acc           & sgd          & random        & triangular      & 2             & 0.7015            & acc           & adam         & random        & triangular      & 2             & 0.8388            \\ \hline
 loss          & sgd          & random        & triangular      & 2             & 0.7036            & loss          & adam         & random        & triangular      & 2             & 0.8412            \\ \hline
 acc           & sgd          & random        & triangular      & 4             & 0.7127            & acc           & adam         & random        & triangular      & 4             & 0.8266            \\ \hline
@@ -421,23 +424,23 @@ loss          & sgd          & random        & triangular2     & 8             &
 \begin{tabular}{|l|l|l|l|l|l||l|l|l|l|l|l|}
 \hline
 \textbf{tipo} & \textbf{ott} & \textbf{crop} & \textbf{metodo} & \textbf{step} & \textbf{test acc} & \textbf{tipo} & \textbf{ott} & \textbf{crop} & \textbf{metodod} & \textbf{step} & \textbf{test acc} \\ \hline
-acc           & sgd          & base          & triangular       & 2             & 0.8934            & loss          & sgd          & random        & triangular2      & 8             & 0.8866            \\ \hline
-loss          & sgd          & base          & triangular       & 2             & 0.8955            & acc           & adam         & base          & triangular       & 2             & 0.9094            \\ \hline
-acc           & sgd          & base          & triangular       & 4             & 0.8910            & loss          & adam         & base          & triangular       & 2             & 0.9094            \\ \hline
-loss          & sgd          & base          & triangular       & 4             & 0.8939            & acc           & adam         & base          & triangular       & 4             & \textbf{0.9108}   \\ \hline
-acc           & sgd          & base          & triangular       & 6             & 0.9009            & loss          & adam         & base          & triangular       & 4             & 0.9103            \\ \hline
-loss          & sgd          & base          & triangular       & 6             & 0.9019            & acc           & adam         & base          & triangular       & 6             & 0.9056            \\ \hline
-acc           & sgd          & base          & triangular       & 8             & 0.8981            & loss          & adam         & base          & triangular       & 6             & 0.9081            \\ \hline
-loss          & sgd          & base          & triangular       & 8             & 0.9020            & acc           & adam         & base          & triangular       & 8             & 0.9063            \\ \hline
-acc           & sgd          & base          & triangular2      & 2             & 0.8765            & loss          & adam         & base          & triangular       & 8             & 0.9063            \\ \hline
-loss          & sgd          & base          & triangular2      & 2             & 0.8733            & acc           & adam         & base          & triangular2      & 2             & 0.8973            \\ \hline
-acc           & sgd          & base          & triangular2      & 4             & 0.8885            & loss          & adam         & base          & triangular2      & 2             & 0.8975            \\ \hline
-loss          & sgd          & base          & triangular2      & 4             & 0.8884            & acc           & adam         & base          & triangular2      & 4             & 0.9073            \\ \hline
-acc           & sgd          & base          & triangular2      & 6             & 0.8957            & loss          & adam         & base          & triangular2      & 4             & 0.9074            \\ \hline
-loss          & sgd          & base          & triangular2      & 6             & 0.8786            & acc           & adam         & base          & triangular2      & 6             & 0.9076            \\ \hline
-acc           & sgd          & base          & triangular2      & 8             & 0.8965            & loss          & adam         & base          & triangular2      & 6             & 0.9097            \\ \hline
-loss          & sgd          & base          & triangular2      & 8             & 0.8967            & acc           & adam         & base          & triangular2      & 8             & 0.9029            \\ \hline
-acc           & sgd          & random        & triangular       & 2             & 0.8816            & loss          & adam         & base          & triangular2      & 8             & 0.9056            \\ \hline
+acc           & sgd          & No          & triangular       & 2             & 0.8934            & loss          & sgd          & random        & triangular2      & 8             & 0.8866            \\ \hline
+loss          & sgd          & No          & triangular       & 2             & 0.8955            & acc           & adam         & No          & triangular       & 2             & 0.9094            \\ \hline
+acc           & sgd          & No          & triangular       & 4             & 0.8910            & loss          & adam         & No          & triangular       & 2             & 0.9094            \\ \hline
+loss          & sgd          & No          & triangular       & 4             & 0.8939            & acc           & adam         & No          & triangular       & 4             & \textbf{0.9108}   \\ \hline
+acc           & sgd          & No          & triangular       & 6             & 0.9009            & loss          & adam         & No          & triangular       & 4             & 0.9103            \\ \hline
+loss          & sgd          & No          & triangular       & 6             & 0.9019            & acc           & adam         & No          & triangular       & 6             & 0.9056            \\ \hline
+acc           & sgd          & No          & triangular       & 8             & 0.8981            & loss          & adam         & No          & triangular       & 6             & 0.9081            \\ \hline
+loss          & sgd          & No          & triangular       & 8             & 0.9020            & acc           & adam         & No          & triangular       & 8             & 0.9063            \\ \hline
+acc           & sgd          & No          & triangular2      & 2             & 0.8765            & loss          & adam         & No          & triangular       & 8             & 0.9063            \\ \hline
+loss          & sgd          & No          & triangular2      & 2             & 0.8733            & acc           & adam         & No          & triangular2      & 2             & 0.8973            \\ \hline
+acc           & sgd          & No          & triangular2      & 4             & 0.8885            & loss          & adam         & No          & triangular2      & 2             & 0.8975            \\ \hline
+loss          & sgd          & No          & triangular2      & 4             & 0.8884            & acc           & adam         & No          & triangular2      & 4             & 0.9073            \\ \hline
+acc           & sgd          & No          & triangular2      & 6             & 0.8957            & loss          & adam         & No          & triangular2      & 4             & 0.9074            \\ \hline
+loss          & sgd          & No          & triangular2      & 6             & 0.8786            & acc           & adam         & No          & triangular2      & 6             & 0.9076            \\ \hline
+acc           & sgd          & No          & triangular2      & 8             & 0.8965            & loss          & adam         & No          & triangular2      & 6             & 0.9097            \\ \hline
+loss          & sgd          & No          & triangular2      & 8             & 0.8967            & acc           & adam         & No          & triangular2      & 8             & 0.9029            \\ \hline
+acc           & sgd          & random        & triangular       & 2             & 0.8816            & loss          & adam         & No          & triangular2      & 8             & 0.9056            \\ \hline
 loss          & sgd          & random        & triangular       & 2             & 0.8827            & acc           & adam         & random        & triangular       & 2             & 0.8921            \\ \hline
 acc           & sgd          & random        & triangular       & 4             & 0.8874            & loss          & adam         & random        & triangular       & 2             & 0.8918            \\ \hline
 loss          & sgd          & random        & triangular       & 4             & 0.8874            & acc           & adam         & random        & triangular       & 4             & 0.9030            \\ \hline
@@ -465,22 +468,22 @@ loss          & sgd          & random        & triangular2      & 8             
 \begin{tabular}{|l|l|l|l|l|l||l|l|l|l|l|l|}
 \hline
 \textbf{tipo} & \textbf{ott} & \textbf{crop} & \textbf{metodo} & \textbf{step} & \textbf{test acc} & \textbf{tipo} & \textbf{ott} & \textbf{crop} & \textbf{metodo} & \textbf{step} & \textbf{test acc} \\ \hline
-acc           & sgd          & base          & triangular      & 2             & 0.9198            & acc           & adam         & base          & triangular      & 2             & 0.9105            \\ \hline
-loss          & sgd          & base          & triangular      & 2             & 0.9198            & loss          & adam         & base          & triangular      & 2             & 0.9105            \\ \hline
-acc           & sgd          & base          & triangular      & 4             & 0.9173            & acc           & adam         & base          & triangular      & 4             & 0.9386            \\ \hline
-loss          & sgd          & base          & triangular      & 4             & 0.9173            & loss          & adam         & base          & triangular      & 4             & 0.9386            \\ \hline
-acc           & sgd          & base          & triangular      & 6             & 0.9164            & acc           & adam         & base          & triangular      & 6             & 0.9261            \\ \hline
-loss          & sgd          & base          & triangular      & 6             & 0.9183            & loss          & adam         & base          & triangular      & 6             & 0.9261            \\ \hline
-acc           & sgd          & base          & triangular      & 8             & 0.9164            & acc           & adam         & base          & triangular      & 8             & 0.9302            \\ \hline
-loss          & sgd          & base          & triangular      & 8             & 0.9164            & loss          & adam         & base          & triangular      & 8             & 0.9329            \\ \hline
-acc           & sgd          & base          & triangular2     & 2             & 0.5316            & acc           & adam         & base          & triangular2     & 2             & 0.9492            \\ \hline
-loss          & sgd          & base          & triangular2     & 2             & 0.5394            & loss          & adam         & base          & triangular2     & 2             & 0.9490            \\ \hline
-acc           & sgd          & base          & triangular2     & 4             & 0.7371            & acc           & adam         & base          & triangular2     & 4             & \textbf{0.9567}   \\ \hline
-loss          & sgd          & base          & triangular2     & 4             & 0.7375            & loss          & adam         & base          & triangular2     & 4             & 0.9559            \\ \hline
-acc           & sgd          & base          & triangular2     & 6             & 0.8211            & acc           & adam         & base          & triangular2     & 6             & 0.9411            \\ \hline
-loss          & sgd          & base          & triangular2     & 6             & 0.8250            & loss          & adam         & base          & triangular2     & 6             & 0.9447            \\ \hline
-acc           & sgd          & base          & triangular2     & 8             & 0.8692            & acc           & adam         & base          & triangular2     & 8             & 0.9393            \\ \hline
-loss          & sgd          & base          & triangular2     & 8             & 0.8697            & loss          & adam         & base          & triangular2     & 8             & 0.9393            \\ \hline
+acc           & sgd          & No          & triangular      & 2             & 0.9198            & acc           & adam         & No          & triangular      & 2             & 0.9105            \\ \hline
+loss          & sgd          & No          & triangular      & 2             & 0.9198            & loss          & adam         & No          & triangular      & 2             & 0.9105            \\ \hline
+acc           & sgd          & No          & triangular      & 4             & 0.9173            & acc           & adam         & No          & triangular      & 4             & 0.9386            \\ \hline
+loss          & sgd          & No          & triangular      & 4             & 0.9173            & loss          & adam         & No          & triangular      & 4             & 0.9386            \\ \hline
+acc           & sgd          & No          & triangular      & 6             & 0.9164            & acc           & adam         & No          & triangular      & 6             & 0.9261            \\ \hline
+loss          & sgd          & No          & triangular      & 6             & 0.9183            & loss          & adam         & No          & triangular      & 6             & 0.9261            \\ \hline
+acc           & sgd          & No          & triangular      & 8             & 0.9164            & acc           & adam         & No          & triangular      & 8             & 0.9302            \\ \hline
+loss          & sgd          & No          & triangular      & 8             & 0.9164            & loss          & adam         & No          & triangular      & 8             & 0.9329            \\ \hline
+acc           & sgd          & No          & triangular2     & 2             & 0.5316            & acc           & adam         & No          & triangular2     & 2             & 0.9492            \\ \hline
+loss          & sgd          & No          & triangular2     & 2             & 0.5394            & loss          & adam         & No          & triangular2     & 2             & 0.9490            \\ \hline
+acc           & sgd          & No          & triangular2     & 4             & 0.7371            & acc           & adam         & No          & triangular2     & 4             & \textbf{0.9567}   \\ \hline
+loss          & sgd          & No          & triangular2     & 4             & 0.7375            & loss          & adam         & No          & triangular2     & 4             & 0.9559            \\ \hline
+acc           & sgd          & No          & triangular2     & 6             & 0.8211            & acc           & adam         & No          & triangular2     & 6             & 0.9411            \\ \hline
+loss          & sgd          & No          & triangular2     & 6             & 0.8250            & loss          & adam         & No          & triangular2     & 6             & 0.9447            \\ \hline
+acc           & sgd          & No          & triangular2     & 8             & 0.8692            & acc           & adam         & No          & triangular2     & 8             & 0.9393            \\ \hline
+loss          & sgd          & No          & triangular2     & 8             & 0.8697            & loss          & adam         & No          & triangular2     & 8             & 0.9393            \\ \hline
 acc           & sgd          & random        & triangular      & 2             & 0.9092            & acc           & adam         & random        & triangular      & 2             & 0.8923            \\ \hline
 loss          & sgd          & random        & triangular      & 2             & 0.9092            & loss          & adam         & random        & triangular      & 2             & 0.8923            \\ \hline
 acc           & sgd          & random        & triangular      & 4             & 0.9116            & acc           & adam         & random        & triangular      & 4             & 0.9141            \\ \hline
