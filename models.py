@@ -33,26 +33,6 @@ def preprocessing(x):
                             models=keras.models,
                             utils=keras.utils)
 
-
-def patch_resnext50():
-    resnext50 = ResNeXt50(
-        weights='imagenet',
-        include_top=False,
-        input_shape=(224, 224, 3),
-        backend=keras.backend,
-        layers=keras.layers,
-        models=keras.models,
-        utils=keras.utils
-    )
-
-    model = Sequential()
-    model.add(resnext50)
-    model.add(GlobalAveragePooling2D())
-    model.add(Dense(6, activation='sigmoid'))
-
-    return model
-
-
 def efficientnetb4():
     efficientnet = EfficientNetB4(
         weights='imagenet',
@@ -73,12 +53,9 @@ def efficientnetb4():
     return model
 
 
-def resnet18(only_features=False):
-    resnet18, _ = Classifiers.get('resnet18')
-    # pip3 install -U --force-reinstall --no-dependencies git+https://github.com/datumbox/keras@fork/keras2.2.4
-    # Permette di freezare i layer evitando il freeze della batch norm
-    # Se la batch norm freeza non funziona nulla
-    base_model = resnet18(input_shape=(224, 224, 3), include_top=False, weights='imagenet')
+def resnet18():
+    resnet, _ = Classifiers.get('resnet18')
+    base_model = resnet(input_shape=(224, 224, 3), include_top=False, weights='imagenet')
 
     x = GlobalAveragePooling2D()(base_model.output)
     x = Dropout(0.5)(x)

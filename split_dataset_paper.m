@@ -1,3 +1,6 @@
+% MATLAB script used to obtain the same dataset subdivision of the original paper
+% Data can be found here http://www.robots.ox.ac.uk/~vgg/data/flowers/102/index.html
+
 ds = imageDatastore('jpg');
 
 for i = 1:102

@@ -1,5 +1,4 @@
-# USAGE
-# python train.py
+# This code is use to train the MLP without using the cyclical learning rate
 
 # import the necessary packages
 from keras.callbacks import ReduceLROnPlateau, EarlyStopping
@@ -8,7 +7,7 @@ from keras.layers.core import Dense
 from keras.optimizers import SGD
 from keras.utils import to_categorical
 from sklearn.metrics import classification_report
-from pyimagesearch import config
+from featext import config
 import numpy as np
 import pickle
 import os

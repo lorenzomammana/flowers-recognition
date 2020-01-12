@@ -64,8 +64,8 @@ else:
 
 train_datagen = preprocessing.image.ImageDataGenerator(
     horizontal_flip=True,  # randomly flip images
-    brightness_range=[0.7, 1.3],
-    rotation_range=10,
+    brightness_range=[0.7, 1.3],  # decrease/increase luminosity
+    rotation_range=10,  # rotation in range [-10,10]
     preprocessing_function=models.preprocessing
 )
 
@@ -73,6 +73,7 @@ test_datagen = preprocessing.image.ImageDataGenerator(
     preprocessing_function=models.preprocessing,
 )
 
+# Random cropping of dimension TARGET_SIZE x TARGET_SIZE
 if CROP == 'random':
     train_generator = train_datagen.flow_from_directory(directory=train_path,
                                                         batch_size=BATCH_SIZE_TRAIN,
@@ -131,7 +132,7 @@ if __name__ == '__main__':
         print("[INFO] examine plot and adjust learning rates before training")
         sys.exit(0)
 
-    # earlyStopping = EarlyStopping(monitor='val_acc', patience=10, verbose=1, mode='max')
+    # Save model if the validation loss decreases or the accuracy increases.
     mcp_save_acc = ModelCheckpoint((output_path / '{}_acc.h5'.format(model_name)).absolute().as_posix(),
                                    save_best_only=True,
                                    monitor='val_acc', mode='max')
@@ -142,6 +143,7 @@ if __name__ == '__main__':
     STEP_SIZE_TRAIN = np.ceil(train_generator.n / train_generator.batch_size)
     STEP_SIZE_VALID = np.ceil(valid_generator.n / valid_generator.batch_size)
 
+    # Define how many iterations are required to complete a learning rate cycle
     stepSize = config.STEP_SIZE * STEP_SIZE_TRAIN
     clr = CyclicLR(
         mode=config.CLR_METHOD,
@@ -149,6 +151,7 @@ if __name__ == '__main__':
         max_lr=config.MAX_LR,
         step_size=stepSize)
 
+    # Using multiprocessing=True is unstable, but is generally faster!
     history = model.fit_generator(train_generator,
                                   epochs=50,
                                   verbose=1,
@@ -196,9 +199,10 @@ if __name__ == '__main__':
 
     print('Best acc model: {}'.format(accuracy))
 
+    # Save results
     with open('results.txt', 'a') as f:
-        f.write('acc\t' + OPTIMIZER + '\t' + CROP + '\t' + config.CLR_METHOD + '\t' + str(config.STEP_SIZE) + '\t' + str(accuracy)
-                + '\n')
+        f.write('acc\t' + OPTIMIZER + '\t' + CROP + '\t' + config.CLR_METHOD + '\t' + str(config.STEP_SIZE) +
+                '\t' + str(accuracy) + '\n')
 
     model.load_weights(output_path / '{}_loss.h5'.format(model_name))
 
@@ -220,7 +224,7 @@ if __name__ == '__main__':
     accuracy = np.sum(np.argmax(predictions, axis=1) == test_generator.classes) / test_generator.samples
 
     with open('results.txt', 'a') as f:
-        f.write('loss\t' + OPTIMIZER + '\t' + CROP + '\t' + config.CLR_METHOD + '\t' + str(config.STEP_SIZE) + '\t' + str(accuracy)
-                + '\n')
+        f.write('loss\t' + OPTIMIZER + '\t' + CROP + '\t' + config.CLR_METHOD + '\t' + str(config.STEP_SIZE) +
+                '\t' + str(accuracy) + '\n')
 
     print('Best loss model: {}'.format(accuracy))

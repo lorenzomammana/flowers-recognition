@@ -1,5 +1,4 @@
-# USAGE
-# python train.py
+# Train the MLP using the cylcical learning rate
 
 # import the necessary packages
 import argparse
