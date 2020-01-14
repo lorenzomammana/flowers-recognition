@@ -57,7 +57,7 @@ elif ARCHITECTURE == 'efficientnet':
     model_name = 'efficientnetb4'
     TARGET_SIZE = 380
 else:
-    model = models.resnet18(only_features=False)
+    model = models.resnet18()
     model_name = 'resnet18'
     TARGET_SIZE = 224
 
