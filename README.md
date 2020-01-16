@@ -1,13 +1,18 @@
 # Oxford 102 Flower Recognition
 
 Classification of flowers in a dataset with large number of similar classes.
-
+The same dataset division defined in the original work is used:
+* 1020 training images
+* 1020 validation images
+* 6149 test images
 ## Getting started
 
 Required packages can be found in requirements.txt
 
+The code should only work on Python 3.
+
 ### Cyclical learning rate
-CNN models are trained using cyclical learning rate.
+CNN models are trained using the approach described in "Cyclical Learning Rates for Training Neural Networks" (L.N. Smith, 2017).
 
 To automatically find the best learning rate range:
 ```
@@ -32,6 +37,14 @@ CROP can be either [none, random]
 
 CYCLICAL_METHOD can be either [triangular, triangular2]
 
+### Best results
+| Model          | Method      | Step | lr range    | batch | crop | test acc |
+|----------------|-------------|------|-------------|-------|------|----------|
+| Resnet18       | Triangular  | 2    | [1e-6,5e-4] | 64    | No   | 0.9187   |
+| Densenet121    | Triangular  | 4    | [1e-5,1e-3] | 64    | No   | 0.9455   |
+| EfficientnetB4 | Triangular2 | 4    | [1e-5,1e-3] | 8     | No   | 0.9719   |
+
+We are able to obtain state of the art performance without using segmented images or overly complexed methods!
 ## Visualization
 
 Saliency maps and grad-cam example as shown in the report can be obtained running.
