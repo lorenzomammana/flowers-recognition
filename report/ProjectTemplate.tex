@@ -98,14 +98,15 @@ Eric Nisoli - 807147- e.nisoli1@campus.unimib.it   \\[1cm] % Your name
 
 
 \begin{abstract}
-The ABSTRACT is not a part of the body of the report itself. Rather, the abstract is a brief summary of the report contents that is often separately circulated so potential readers can decide whether to read the report. The abstract should very concisely summarize the whole report: why it was written, what was discovered or developed, and what is claimed to be the significance of the effort. The abstract does not include figures or tables, and only the most significant numerical values or results should be given.
+Il presente lavoro illustra un approccio supervisionato alla classificazione di immagini su un dataset di piccole dimensioni, ma con un grande numero di classi. In particolare viene mostrato come la combinazione di moderne tecniche di addestramento e i recenti sviluppi nel campo della ricerca di architetture per reti neurali, siano in grado di ottenere delle performance comparabili con modelli molto più complessi presenti in letteratura.
+\cite{Nowell23}
 \end{abstract}
 
 \section{Introduzione}
 L'obiettivo del progetto è quello di costruire un modello di machine learning per la classificazione di immagini in grado di operare bene su un dataset di piccole dimensioni comprendente un alto numero di classi simili tra di loro.
 Come è facilmente intuibile, il problema principale di operare su un dataset di questo tipo è l'overfitting del modello sui dati di training con conseguente fallimento del modello su dati nuovi. Per risolvere questo problema ci siamo concentrati sulla ricerca di modelli, iperparametri e tecniche di generalizzazione che permettessero al modello di essere in grado di operare su un dataset di test molto più ampio di quello utilizzato per l'addestramento.
-Il modello utilizzato per questo tipo di analisi è una rete neurale convoluzionale; questo tipo di modello si è dimostrato negli ultimi anni il migliore nel classificare immagini in moltissimi campi di applicazione.
-In particolare viene fatto uso di un modello preaddestrato su immagini simili, ci si aspetta quindi che la classificazione finale sia particolarmente buona nonostante i problemi iniziali derivati dal dataset.
+Il modello utilizzato per questo tipo di analisi è una rete neurale convoluzionale (CNN); questo tipo di modello si è dimostrato negli ultimi anni il migliore nel classificare immagini in moltissimi campi di applicazione.
+In particolare viene fatto uso di un modello preaddestrato su immagini simili, ci si aspetta quindi che la classificazione finale buona nonostante i problemi iniziali derivati dal dataset.
 
 \section{Dataset}
 Il dataset utilizzato è il \textit{102 Category Flower Dataset} \cite{Nilsback08} creato dai ricercatori del \textit{Visual Geometry Group} di \textit{Oxford}. Il dataset è composto da 8189 immagini RGB di dimensione variabile, ogni immagine contiene uno o più fiori su sfondo neutro ed è etichettata con una singola categoria estratta da un insieme di centodue possibili categorie. Il dataset originale contiene anche i fiori segmentati dallo sfondo (Figura \ref{fig_dataset}), queste immagini possono essere usate ad esempio come ulteriore input per la rete neurale. In questo lavoro non sono state utilizzate principalmente per forzare la rete ad essere più elastica rispetto allo sfondo delle immagini.
@@ -127,10 +128,10 @@ La difficoltà di operare su un dataset di questo tipo è evidente, il numero di
 
 
 \section{Approccio metodologico}
-Per classificare le immagini nelle classi corrette si è deciso di utilizzare una rete neurale convoluzionale (CNN). Come è noto addestrare questo tipo di modello richiede un numero di immagini dell'ordine di milioni di elementi, non avendo a disposizione così tante immagini è necessario eseguire la tecnica nota come \textit{finetuning} in cui la CNN viene inizializzata con pesi calcolati su un dataset di milioni di immagini e modificati in accordo con i propri dati disponibili.
-Si è deciso quindi di utilizzare reti preaddestrate sul dataset \textit{Imagenet} contenente più di 10 milioni di immagini di cui più di trecentomila rappresentanti fiori.
+Per classificare le immagini nelle classi corrette si è deciso di utilizzare una rete neurale convoluzionale. Come è noto addestrare questo tipo di modello richiede un numero di immagini dell'ordine di milioni di elementi, non avendo a disposizione così tante immagini è necessario eseguire la tecnica nota come \textit{finetuning} in cui la CNN viene inizializzata con pesi calcolati su un dataset di milioni di immagini e modificati in accordo con i propri dati disponibili.
+Si è deciso quindi di utilizzare reti preaddestrate sul dataset \textit{Imagenet}   \cite{5206848} contenente più di 10 milioni di immagini di cui più di trecentomila rappresentanti fiori.
 \subsection{Esperimento baseline}
-Considerando il fatto che il numero di immagini di training è limitato, è stato inizialmente deciso di definire un modello baseline non particolarmente complesso. Il modello scelto è una \textit{Resnet18} \cite{he2015deep} preaddestrata su \textit{Imagenet} \cite{5206848}. Inizialmente si è provato ad utilizzare la rete come estrattore di features per valutare quanto il preaddestramento influisca sulla classificazione finale. 
+Considerando il fatto che il numero di immagini di training è limitato, è stato inizialmente deciso di definire un modello baseline non particolarmente complesso. Il modello scelto è una \textit{Resnet18} \cite{he2015deep} preaddestrata su \textit{Imagenet}. Inizialmente si è provato ad utilizzare la rete come estrattore di features per valutare quanto il preaddestramento influisca sulla classificazione finale. 
 Le features estratte vengono classificate utilizzando un semplice percettrone multistrato:
 \begin{table}[H]
 \centering
@@ -166,7 +167,7 @@ Per calcolare il range su cui far variare il learning rate viene utilizzata una 
 \begin{enumerate}
 \item Si definiscono un estremo inferiore piccolo ed un estremo superiore grande su cui far variare il learning rate, ad esempio [1e-10, 1e-1].
 \item Si addestra la rete per un numero ridotto di epoche partendo dall'estremo inferiore ed incrementando esponenzialmente il learning rate ad ogni batch.
-\item Il training continua fino a quando il learning rate non raggiunge l'estremo superiore
+\item Il training continua fino a quando il learning rate non raggiunge l'estremo superiore.
 \item Viene plottato un grafico che mostra quando il learning rate è troppo basso o troppo alto.
 \end{enumerate} 
 L'algoritmo sul percettrone multistrato produce il seguente grafico:
@@ -226,7 +227,7 @@ In tabella vengono mostrati due metodi uno definito \textit{Triangular} e l'altr
 Da questa prima valutazione si è in grado di notare come il preaddestramento influisca decisamente sulla classificazione del dataset.
 \subsection{Esperimento 1 - Finetuning Resnet18}
 La sola estrazione delle feature non è ovviamente abbastanza per ottenere delle performance soddisfacenti sul test set, si è proceduto quindi ad eseguire il finetuning dell'intera rete in modo tale da aggiornare i pesi per renderli più compatibili con il nuovo dataset.
-Adesso invece di accodare un percettrone multistrato all'ultimo layer della rete viene applicato un layer di average pooling seguito da un layer di dropout ($\rho$ = 0.5) ed un layer completamente connesso contenente 102 neuroni.
+Adesso invece di accodare un percettrone multistrato all'ultimo layer della rete, viene applicato un layer di \textit{average pooling} seguito da un layer di \textit{dropout} ($\rho$ = 0.5) ed un layer completamente connesso contenente 102 neuroni.
 \subsubsection{Preprocessing e Data augmentation}
 Per massimizzare la generalizzazione del modello si è deciso di "aumentare" le immagini di training applicando i seguenti effetti:
 \begin{itemize}
@@ -241,8 +242,7 @@ Per addestrare la rete vengono utilizzate le stesse tecniche descritte nella sez
 Per ognuno dei due ottimizzatori viene calcolato il range da utilizzare per l'addestramento tramite learning rate ciclico.
 Il modello viene addestrato per 50 epoche, ad ogni epoca vengono salvati i pesi nel caso in cui la loss sul validation set sia minore del miglior modello precedente e nel caso l'accuratezza sul validation set sia maggiore.
 \subsubsection{Risultati ottenuti}
-In tabella \ref{t_res_resnet} vengono mostrati i risultati ottenuti, si vede una netta discrepanza nei risultati ottenuti dai due algoritmi, la motivazione potrebbe essere relativa al fatto che, essendo la rete già addestrata, Adam sia in grado di pesare automaticamente in maniera minore i primi layer della rete rispetto agli ultimi garantendo una convergenza ottimale dell'algoritmo.
-Uno dei problemi riscontrati con il package \textit{Keras}, utilizzato per addestrare il modello, è proprio l'assenza di un modo semplice per settare il moltiplicatore del learning rate per i layer iniziali, questa opzione è generalmente presente in tutti gli altri software di ML. Dalla tabella vediamo anche come il modello addestrato su crop random delle immagini non è grado di ottenere performance a livello del modello addestrato sulle immagini non tagliate, anche questo è facilmente giustificabile mostrando come sono fatte le immagini di training e di test.
+In tabella \ref{t_res_resnet} vengono mostrati i risultati ottenuti, si vede una netta discrepanza tra i due algoritmi. La motivazione potrebbe essere relativa al fatto che, essendo la rete già addestrata, Adam sia in grado di pesare automaticamente in maniera minore i primi layer della rete rispetto agli ultimi garantendo una convergenza ottimale dell'algoritmo. Uno dei problemi riscontrati con il package \textit{Keras}, utilizzato per addestrare il modello, è proprio l'assenza di un modo semplice per settare il moltiplicatore del learning rate per i layer iniziali, questa opzione è generalmente presente in tutti gli altri software di ML. Dalla tabella vediamo anche come il modello addestrato su crop random delle immagini non sia in grado di ottenere performance a livello del modello addestrato sulle immagini non tagliate, anche questo è facilmente giustificabile mostrando come sono fatte le immagini di training e di test.
 
 \begin{figure}[H]
   \begin{subfigure}[b]{0.45\textwidth}
@@ -282,7 +282,7 @@ L'input di questa rete è costituito da immagini di dimensione 380x380, il numer
 Utilizzando le stesse tecniche di addestramento già descritte si ottengono i risultati in tabella \ref{t_res_efficientnet}, anche in questo caso Adam funziona leggermente meglio di SGD e otteniamo un ulteriore aumento di accuratezza rispetto alla Densenet di circa il 5\%.
 
 \subsection{Verifica dell'apprendimento della rete}
-Per verificare su quali parti dell'immagine la rete fa maggiormente riferimento per eseguire la classificazione utilizziamo due metodi ben noti in letteratura, le \textit{Saliency Maps} \cite{simonyan2013deep} e il grad-CAM \cite{Selvaraju_2019}.
+Per verificare su quali parti dell'immagine la rete fa maggiormente riferimento per eseguire la classificazione, utilizziamo due metodi ben noti in letteratura, le \textit{Saliency Maps} \cite{simonyan2013deep} e il grad-CAM \cite{Selvaraju_2019}.
 \subsubsection{Saliency maps}
 L'idea delle \textit{Saliency maps} è molto semplice, si visualizzano i gradienti di un'immagine in ingresso rispetto alla sua label calcolati sul layer di classificazione. Questa mappa dei gradienti indica quali sono le zone che più influiscono sulla classificazione corretta dell'immagine.
 
@@ -362,7 +362,7 @@ LG-CNN \cite{XIE2017118}                 & 0.9660            \\ \hline
 Gli obiettivi discussi inizialmente sono stati raggiunti, grazie ala combinazione di moderne architetture e tecniche di addestramento si è in grado di ottenere risultati comparabili a tecniche molto più sofisticate sviluppate da ricercatori esperti. Ci si aspettava dei risultati migliori per quanto riguarda l'addestramento delle reti su ritagli di immagini, questo tipo di modelli potrebbero funzionare meglio di quelli addestrati sulle intere immagini se testati su un dataset più complesso. Per ottenere un ulteriore aumento delle performance potrebbe essere possibile integrare le segmentazioni delle immagini come canale di input per la rete, questo dovrebbe migliorare sicuramente le performance sul dataset in oggetto, ma richiederebbe la conoscenza di queste immagini anche nel caso si volesse testare la rete su dati nuovi, limitandone l'utilizzo reale.
 \newpage
 \section{Conclusioni}
-Classificare un dataset con molte classi simili tra di loro è ormai possibile grazie agli incredibili avanzamenti in materia di ottimizzazione e architetture di reti neurali. Come mostrato in questo lavoro il semplice utilizzo di tecniche moderne permette di ottenere performance estremamente elevate, senza dover necessariamente andare ad inventare architetture o algoritmi molto più complessi. In un mondo sempre più indirizzato verso l'autoML la scelta di utilizzare tecniche di ottimizzazione e architetture automatizzate sembra la più sensata, nonostante ciò l'intervento umano richiesto è comunque ancora parecchio evidente. Come già citato in precedenza ci sono alcune tecniche testabili in futuro per aumentare ulteriormente le performance, sarebbe inoltre interessante costruire un nuovo dataset con le stesse classi, ma molto più grande e complesso, per verificare ulteriormente quali tecniche funzionano realmente meglio. Come si è visto anche una semplice Resnet18, architettura proposta cinque anni fa e non particolarmente profonda ottiene delle performance superiori al 90\%. Il dataset in oggetto, proposto ormai nel lontano 2008 è quasi vicino al punto in cui una rete neurale è perfettamente in grado di classificarlo!
+Classificare un dataset con molte classi simili tra di loro è ormai possibile grazie agli incredibili avanzamenti in materia di ottimizzazione e architetture di reti neurali. Come mostrato in questo lavoro il semplice utilizzo di tecniche moderne permette di ottenere performance estremamente elevate, senza dover necessariamente andare ad inventare architetture o algoritmi molto più complessi. In un mondo sempre più indirizzato verso l'autoML la scelta di utilizzare tecniche di ottimizzazione e architetture automatizzate sembra la più sensata, nonostante ciò l'intervento umano richiesto è comunque ancora parecchio evidente. Come già citato in precedenza ci sono alcune tecniche testabili in futuro per aumentare ulteriormente le performance, sarebbe inoltre interessante costruire un nuovo dataset con le stesse classi, ma molto più grande e complesso, per verificare ulteriormente quali tecniche funzionino realmente meglio. Come si è visto anche una semplice Resnet18, architettura proposta cinque anni fa e non particolarmente profonda ottiene delle performance superiori al 90\%. Il dataset in oggetto, proposto ormai nel lontano 2008 è quasi vicino al punto in cui una rete neurale è perfettamente in grado di classificarlo!
 
 \section*{Ringraziamenti}
 Gli autori ringraziano il supporto del Consortium GARR per aver permesso l'utilizzo di una Nvidia Tesla V100 su cui sono stati eseguiti tutti gli esperimenti.
@@ -373,6 +373,17 @@ Gli autori ringraziano il supporto del Consortium GARR per aver permesso l'utili
 \newpage
 \appendix
 \section{Risultati sperimentali}
+\subsection{Resnet18}
+\begin{table}[H]
+\centering
+\caption{Dettagli addestramento}
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+\textbf{ott} & \textbf{range lr} & \textbf{epoche} & \textbf{batch size} & \textbf{tempo training medio} \\ \hline
+SGD          & [1e-5, 1e-3]         & 50              & 64                  & 300s                          \\ \hline
+Adam         & [1e-6, 5e-4]         & 50              & 64                  & 300s                          \\ \hline
+\end{tabular}
+\end{table}
 \begin{table}[H]
 \centering
 \caption{Risultati finetuning resnet18}
@@ -417,6 +428,18 @@ loss          & sgd          & random        & triangular2     & 8             &
 \label{t_res_resnet}
 \end{table}
 
+\subsection{Densenet121}
+
+\begin{table}[H]
+\centering
+\caption{Dettagli addestramento}
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+\textbf{ott} & \textbf{range lr} & \textbf{epoche} & \textbf{batch size} & \textbf{tempo training medio} \\ \hline
+SGD          & [1e-5, 1e-2]         & 50              & 64                  & 450s                          \\ \hline
+Adam         & [1e-5, 1e-3]        & 50              & 64                  & 450s                          \\ \hline
+\end{tabular}
+\end{table}
 \begin{table}[H]
 \centering
 \caption{Risultati finetuning Densenet121}
@@ -461,6 +484,18 @@ loss          & sgd          & random        & triangular2      & 8             
 \label{t_res_densenet}
 \end{table}
 
+\subsection{EfficientnetB4}
+
+\begin{table}[H]
+\centering
+\caption{Dettagli addestramento}
+\begin{tabular}{|l|l|l|l|l|}
+\hline
+\textbf{ott} & \textbf{range lr} & \textbf{epoche} & \textbf{batch size} & \textbf{tempo training medio} \\ \hline
+SGD          & {[}1e-5, 1e-3{]}   & 50              & 8                   & 2000s                         \\ \hline
+Adam         & {[}1e-5, 1e-3{]}  & 50              & 68                  & 2000s                         \\ \hline
+\end{tabular}
+\end{table}
 \begin{table}[H]
 \centering
 \caption{Risultati finetuning EfficientnetB4}

@@ -8,19 +8,17 @@ from keras.applications import ResNet50
 from keras.applications import imagenet_utils
 from keras.preprocessing.image import img_to_array
 from keras.preprocessing.image import load_img
-from pyimagesearch import config
+from featext import config
 from imutils import paths
 import numpy as np
 import pickle
 import random
 import os
 
-# load the ResNet50 network and initialize the label encoder
+# load the ResNet18 network and initialize the label encoder
 print("[INFO] loading network...")
 resnet18, _ = Classifiers.get('resnet18')
-# pip3 install -U --force-reinstall --no-dependencies git+https://github.com/datumbox/keras@fork/keras2.2.4
-# Permette di freezare i layer evitando il freeze della batch norm
-# Se la batch norm freeza non funziona nulla
+
 model = resnet18(input_shape=(224, 224, 3), include_top=False, weights='imagenet')
 for layer in model.layers:
     layer.trainable = False
