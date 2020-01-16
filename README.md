@@ -42,7 +42,7 @@ CYCLICAL_METHOD can be either [triangular, triangular2]
 |----------------|-------------|------|-------------|-------|------|----------|
 | Resnet18       | Triangular  | 2    | [1e-6,5e-4] | 64    | No   | 0.9187   |
 | Densenet121    | Triangular  | 4    | [1e-5,1e-3] | 64    | No   | 0.9455   |
-| EfficientnetB4 | Triangular2 | 4    | [1e-5,1e-3] | 8     | No   | 0.9719   |
+| EfficientnetB4 | Triangular2 | 4    | [1e-5,1e-3] | 8     | No   | 0.9719   |
 
 We are able to obtain state of the art performance without using segmented images or overly complexed methods!
 ## Visualization
