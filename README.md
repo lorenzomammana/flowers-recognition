@@ -41,5 +41,13 @@ python visualization/visualize.py
 This will produce the exact images inside visualization/output.
 
 ## Feature extraction
+To use the network as a feature extract it's first necessary to save the features on file using:
+```
+python featext/extract_features.py
+```
 
-
+After that it's possible to train the MLP on top with or without cyclical learning rate:
+```
+python featext/trainautolr.py
+python featext/train.py
+```
