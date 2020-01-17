@@ -82,7 +82,7 @@ Eric Nisoli - 807147- e.nisoli1@campus.unimib.it   \\[1cm] % Your name
 %	DATE SECTION
 %----------------------------------------------------------------------------------------
 
-{\large \today}\\[2cm] % Date, change the \today to a set date if you want to be precise
+{\large 16 Gennaio 2020}\\[2cm] % Date, change the \today to a set date if you want to be precise
 
 %----------------------------------------------------------------------------------------
 %	LOGO SECTION
@@ -98,14 +98,14 @@ Eric Nisoli - 807147- e.nisoli1@campus.unimib.it   \\[1cm] % Your name
 
 
 \begin{abstract}
-Il presente lavoro illustra un approccio supervisionato alla classificazione di immagini su un dataset di piccole dimensioni, ma con un grande numero di classi. In particolare viene mostrato come la combinazione di moderne tecniche di addestramento e i recenti sviluppi nel campo della ricerca di architetture per reti neurali, siano in grado di ottenere delle performance comparabili a quelli ottenuti da modelli molto più complessi presenti in letteratura.
+Il presente lavoro illustra un approccio supervisionato alla classificazione di immagini su un dataset di piccole dimensioni, ma con un grande numero di classi. In particolare viene mostrato come la combinazione di moderne tecniche di addestramento e i recenti sviluppi nel campo della ricerca di architetture per reti neurali, siano in grado di ottenere delle performance comparabili a quelle ottenuti da modelli molto più complessi presenti in letteratura.
 \end{abstract}
 
 \section{Introduzione}
 L'obiettivo del progetto è quello di costruire un modello di machine learning per la classificazione di immagini in grado di operare bene su un dataset di piccole dimensioni comprendente un alto numero di classi simili tra di loro.
 Come è facilmente intuibile, il problema principale di operare su un dataset di questo tipo è l'overfitting del modello sui dati di training con conseguente fallimento del modello su dati nuovi. Per risolvere questo problema ci siamo concentrati sulla ricerca di modelli, iperparametri e tecniche di generalizzazione che permettessero al modello di essere in grado di operare su un dataset di test molto più ampio di quello utilizzato per l'addestramento.
 Il modello utilizzato per questo tipo di analisi è una rete neurale convoluzionale (CNN); questo tipo di modello si è dimostrato negli ultimi anni il migliore nel classificare immagini in moltissimi campi di applicazione.
-In particolare viene fatto uso di un modello preaddestrato su immagini simili, ci si aspetta quindi che la classificazione finale buona nonostante i problemi iniziali derivati dal dataset.
+In particolare viene fatto uso di un modello preaddestrato su immagini simili, ci si aspetta quindi che la classificazione finale sia buona nonostante i problemi iniziali derivati dal dataset.
 
 \section{Dataset}
 Il dataset utilizzato è il \textit{102 Category Flower Dataset} \cite{Nilsback08} creato dai ricercatori del \textit{Visual Geometry Group} di \textit{Oxford}. Il dataset è composto da 8189 immagini RGB di dimensione variabile, ogni immagine contiene uno o più fiori su sfondo neutro ed è etichettata con una singola categoria estratta da un insieme di centodue possibili categorie. Il dataset originale contiene anche i fiori segmentati dallo sfondo (Figura \ref{fig_dataset}), queste immagini possono essere usate ad esempio come ulteriore input per la rete neurale. In questo lavoro non sono state utilizzate principalmente per forzare la rete ad essere più elastica rispetto allo sfondo delle immagini.
@@ -144,8 +144,7 @@ dense\_3 (Dense) & (None, 102)  & 13158    \\ \hline
 \end{tabular}
 \label{t_mlp}
 \end{table}
-L'architettura è stata scelta eseguendo un test automatico di più configurazioni in parallelo.
-
+L'architettura è stata scelta testando diverse configurazioni e prendendo la migliore in termini di accuratezza sul validation set.
 \subsubsection{Preprocessing e Data augmentation}
 Prima di procedere con l'estrazione delle features le immagini vengono normalizzate per avere media nulla e varianza unitaria utilizzando la formula:
 \begin{equation}
@@ -358,7 +357,7 @@ LG-CNN \cite{XIE2017118}                 & 0.9660            \\ \hline
 \label{t_conf}
 \end{table}
 \section{Discussione}
-Gli obiettivi discussi inizialmente sono stati raggiunti, grazie ala combinazione di moderne architetture e tecniche di addestramento si è in grado di ottenere risultati comparabili a tecniche molto più sofisticate sviluppate da ricercatori esperti. Ci si aspettava dei risultati migliori per quanto riguarda l'addestramento delle reti su ritagli di immagini, questo tipo di modelli potrebbero funzionare meglio di quelli addestrati sulle intere immagini se testati su un dataset più complesso. Per ottenere un ulteriore aumento delle performance potrebbe essere possibile integrare le segmentazioni delle immagini come canale di input per la rete, questo dovrebbe migliorare sicuramente le performance sul dataset in oggetto, ma richiederebbe la conoscenza di queste immagini anche nel caso si volesse testare la rete su dati nuovi, limitandone l'utilizzo reale.
+Gli obiettivi discussi inizialmente sono stati raggiunti, grazie alla combinazione di moderne architetture e tecniche di addestramento si è in grado di ottenere risultati comparabili a tecniche molto più sofisticate sviluppate da ricercatori esperti. Ci si aspettava dei risultati migliori per quanto riguarda l'addestramento delle reti su ritagli di immagini, questo tipo di modelli potrebbero funzionare meglio di quelli addestrati sulle intere immagini se testati su un dataset più complesso. Per ottenere un ulteriore aumento delle performance potrebbe essere possibile integrare le segmentazioni delle immagini come canale di input per la rete, questo dovrebbe migliorare sicuramente le performance sul dataset in oggetto, ma richiederebbe la conoscenza di queste immagini anche nel caso si volesse testare la rete su dati nuovi, limitandone l'utilizzo reale.
 \newpage
 \section{Conclusioni}
 Classificare un dataset con molte classi simili tra di loro è ormai possibile grazie agli incredibili avanzamenti in materia di ottimizzazione e architetture di reti neurali. Come mostrato in questo lavoro il semplice utilizzo di tecniche moderne permette di ottenere performance estremamente elevate, senza dover necessariamente andare ad inventare architetture o algoritmi molto più complessi. In un mondo sempre più indirizzato verso l'autoML la scelta di utilizzare tecniche di ottimizzazione e architetture automatizzate sembra la più sensata, nonostante ciò l'intervento umano richiesto è comunque ancora parecchio evidente. Come già citato in precedenza ci sono alcune tecniche testabili in futuro per aumentare ulteriormente le performance, sarebbe inoltre interessante costruire un nuovo dataset con le stesse classi, ma molto più grande e complesso, per verificare ulteriormente quali tecniche funzionino realmente meglio. Come si è visto anche una semplice Resnet18, architettura proposta cinque anni fa e non particolarmente profonda ottiene delle performance superiori al 90\%. Il dataset in oggetto, proposto ormai nel lontano 2008 è quasi vicino al punto in cui una rete neurale è perfettamente in grado di classificarlo!
