@@ -71,7 +71,7 @@ protobuf==3.7.1
 psrecord==1.1
 psutil==5.6.1
 pycairo==1.18.0
-Pygments==2.3.1
+Pygments==2.7.4
 pyparsing==2.4.2
 pyrsistent==0.14.11
 PySocks==1.7.0
