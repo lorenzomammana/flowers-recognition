@@ -49,7 +49,7 @@ MarkupSafe==1.1.1
 matplotlib==3.1.1
 MIDIUtil==1.2.1
 mido==1.2.9
-mistune==0.8.4
+mistune==2.0.3
 mock==2.0.0
 mxm.midifile==1.1
 nbconvert==5.4.1
